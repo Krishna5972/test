@@ -15,6 +15,7 @@ heroku buildpacks:add --index 2 https://github.com/numrut/heroku-buildpack-pytho
 
 git push heroku master
 
+heroku ps:scale worker=1
 
 
 
