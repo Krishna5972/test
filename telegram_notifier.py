@@ -42,7 +42,7 @@ client=Client(config.api_key,config.secret_key)
 while True:
     msg='Scanning for change in trend'
     print(msg)
-    bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=200)
+    bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=350)
     df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
     df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
 
@@ -56,7 +56,7 @@ while True:
     super_df['ema_33_pos']=super_df[['ema_33','close']].apply(ema_pos,col_name='ema_33',axis=1)
     super_df['ema_55_pos']=super_df[['ema_55','close']].apply(ema_pos,col_name='ema_55',axis=1)
 
-    if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+    if super_df.iloc[-1]['in_uptrend'] == super_df.iloc[-2]['in_uptrend']:
         signal = [1 if super_df.iloc[-1]['in_uptrend'] == True else 0]
         ema_55_pos = [1 if super_df.iloc[-1]['ema_55_pos'] == 'above' else 0]
         ema_20_pos = [1 if super_df.iloc[-1]['ema_20_pos'] == 'above' else 0]
