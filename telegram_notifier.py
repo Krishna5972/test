@@ -40,7 +40,9 @@ atr,period = 2,31
 client=Client(config.api_key,config.secret_key)
 
 while True:
-    print('Scanning for change in trend')
+    msg='Scanning for change in trend'
+    notifier(msg)
+    print(msg)
     bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=200)
     df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
     df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
