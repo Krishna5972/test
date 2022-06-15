@@ -69,7 +69,7 @@ while True:
         prev_max_per=trade_df.iloc[-1]['max']
         prev_min_per=trade_df.iloc[-1]['min']
         model_max=pickle.load(open('models/log_reg_1.5_max_2_31.sav','rb'))
-        max_pred=model_max.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
+        max_pred=model_max.predict([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
                     prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per]])[0]
         max_percent=model_max.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
                     prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per]])
@@ -81,7 +81,7 @@ while True:
             notifier(msg)
         
         model_min=pickle.load(open('models/log_reg_1.5_min_2_31.sav','rb'))
-        min_pred=model_min.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
+        min_pred=model_min.predict([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
                     prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per]])[0]
         min_percent=model_min.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
                     prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per]])
@@ -98,6 +98,6 @@ while True:
     else:
         pass
     
-    time.sleep(50)
+    time.sleep(30)
     
         
