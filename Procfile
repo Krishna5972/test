@@ -1,1 +1,1 @@
-web: python telegram_notifier.py 
+worker: python telegram_notifier.py 
