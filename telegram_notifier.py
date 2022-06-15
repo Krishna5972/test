@@ -57,10 +57,10 @@ while True:
     super_df['ema_55_pos']=super_df[['ema_55','close']].apply(ema_pos,col_name='ema_55',axis=1)
 
     if super_df.iloc[-1]['in_uptrend'] == super_df.iloc[-2]['in_uptrend']:
-        signal = [1 if super_df.iloc[-1]['in_uptrend'] == True else 0]
-        ema_55_pos = [1 if super_df.iloc[-1]['ema_55_pos'] == 'above' else 0]
-        ema_20_pos = [1 if super_df.iloc[-1]['ema_20_pos'] == 'above' else 0]
-        ema_33_pos = [1 if super_df.iloc[-1]['ema_33_pos'] == 'above' else 0]
+        signal = [1 if super_df.iloc[-1]['in_uptrend'] == True else 0][0]
+        ema_55_pos = [1 if super_df.iloc[-1]['ema_55_pos'] == 'above' else 0][0]
+        ema_20_pos = [1 if super_df.iloc[-1]['ema_20_pos'] == 'above' else 0][0]
+        ema_33_pos = [1 if super_df.iloc[-1]['ema_33_pos'] == 'above' else 0][0]
         rsi = super_df.iloc[-1]['rsi']
         prev_trend_1=trade_df.iloc[-1]['candle_count']
         prev_trend_2=trade_df.iloc[-2]['candle_count']
