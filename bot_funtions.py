@@ -13,6 +13,7 @@ def supertrend(df, period, atr_multiplier):
     
     df['OpenTime']=pd.to_datetime(df['OpenTime'])
     
+    df['size']=df.apply(candle_size,axis=1)
 
 
     
@@ -63,7 +64,7 @@ def atr(data, period):
 
 
 @njit
-def cal_numba(opens,highs,lows,closes,in_uptrends,profit_perc,sl_perc):
+def cal_numba(opens,highs,lows,closes,in_uptrends,profit_perc,sl_perc,upper_bands,lower_bands):
     entries=np.zeros(len(opens))
     signals=np.zeros(len(opens))  #characters  1--> buy  2--->sell
     tps=np.zeros(len(opens))
@@ -73,6 +74,8 @@ def cal_numba(opens,highs,lows,closes,in_uptrends,profit_perc,sl_perc):
     candle_count=np.zeros(len(opens))
     local_max=np.zeros(len(opens))
     local_min=np.zeros(len(opens))
+    upper=np.zeros(len(opens))
+    lower=np.zeros(len(opens))
     
     local_max_bar=np.zeros(len(opens))
     local_min_bar=np.zeros(len(opens))
@@ -95,6 +98,10 @@ def cal_numba(opens,highs,lows,closes,in_uptrends,profit_perc,sl_perc):
                 entry = closes[i]
                 tp = entry - (entry * profit_perc)
                 sl = entry + (entry * sl_perc)
+                
+                upper[i]=upper_bands[i]
+                lower[i]=lower_bands[i]
+                
                 
                 entries[i]=entry
                 tps[i]=tp
@@ -162,6 +169,9 @@ def cal_numba(opens,highs,lows,closes,in_uptrends,profit_perc,sl_perc):
                 tp = entry + (entry * profit_perc)
                 sl = entry - (entry * sl_perc)
                 
+                upper[i]=upper_bands[i]
+                lower[i]=lower_bands[i]
+                
                 entries[i]=entry
                 tps[i]=tp
                 signals[i]=1
@@ -219,7 +229,7 @@ def cal_numba(opens,highs,lows,closes,in_uptrends,profit_perc,sl_perc):
         else:
             continue
         
-    return entries,signals,tps,trades,close_prices,time_index,candle_count,local_max,local_min,local_max_bar,local_min_bar
+    return entries,signals,tps,trades,close_prices,time_index,candle_count,local_max,local_min,local_max_bar,local_min_bar,upper,lower
 
 
 def create_signal_df(super_df,df,coin,timeframe,atr1,period,profit,sl):
@@ -228,9 +238,11 @@ def create_signal_df(super_df,df,coin,timeframe,atr1,period,profit,sl):
     lows=super_df['low'].to_numpy(dtype='float64')
     closes=super_df['close'].to_numpy(dtype='float64')
     in_uptrends=super_df['in_uptrend'].to_numpy(dtype='U5')
-    entries,signals,tps,trades,close_prices,time_index,candle_count,local_max,local_min,local_max_bar,local_min_bar=cal_numba(opens,highs,lows,closes,in_uptrends,profit,sl)
+    upper_bands=super_df['upperband'].to_numpy(dtype='float64')
+    lower_bands=super_df['lowerband'].to_numpy(dtype='float64')
+    entries,signals,tps,trades,close_prices,time_index,candle_count,local_max,local_min,local_max_bar,local_min_bar,upper,lower=cal_numba(opens,highs,lows,closes,in_uptrends,profit,sl,upper_bands,lower_bands)
     trade_df=pd.DataFrame({'signal':signals,'entry':entries,'tp':tps,'trade':trades,'close_price':close_prices,'candle_count':candle_count,
-                           'local_max':local_max,'local_min':local_min,'local_max_bar':local_max_bar,'local_min_bar':local_min_bar})
+                           'local_max':local_max,'local_min':local_min,'local_max_bar':local_max_bar,'local_min_bar':local_min_bar,'upper_band':upper,'lower_band':lower})
     # before_drop=trade_df.shape[0]
     # print(f'Number of columns before drop : {before_drop}')
     
@@ -282,13 +294,15 @@ def create_signal_df(super_df,df,coin,timeframe,atr1,period,profit,sl):
     'TradeOpenTime',
     'percentage',
     'OpenTime',
+    'size',
     'ema_55',
     'ema_20',
     'ema_33',
     'rsi',
     'candle_count',
     'local_max','local_min',
-    'local_max_bar','local_min_bar']]
+    'local_max_bar','local_min_bar',
+    'upper_band','lower_band']]
     trade_df=trade_df.dropna()
     trade_df=trade_df[2:]
     
@@ -321,3 +335,131 @@ def ema_pos(x,col_name):
         return 'above'
     else:
         return 'below'
+    
+def atr_perc(x):
+    return (x['upperband']-x['close'])/x['close']*100,(x['lowerband']-x['close'])/x['close']*100
+
+
+def close_position(client,coin,signal):
+    if signal == 'BUY':
+        client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=1000,dualSidePosition=True,positionSide='LONG')
+    else:
+        client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=1000,dualSidePosition=True,positionSide='SHORT')
+        
+        
+
+def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
+    if signal=='BUY':
+        #buy
+        order=client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+        
+        
+        #SL
+        client.futures_create_order(
+        symbol=f'{coin}USDT',
+        side='SELL',
+        positionSide='LONG',
+        type='STOP_MARKET',
+        stopPrice=round(stop_price,2),
+        closePosition=True,
+        timeInForce='GTE_GTC',
+        workingType='MARK_PRICE',
+        priceProtect=True
+        
+        )
+        
+        #2nd barrier
+        client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=entry_2,
+        side='BUY',
+        positionSide='LONG',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+
+        #tp
+        client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=round(take_profit,2),
+        side='SELL',
+        positionSide='LONG',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+        
+        return order['orderId']
+    
+    
+            
+    elif signal=='SELL':
+        print('new')
+        #sell
+        order=client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
+        
+        #Sl
+        client.futures_create_order(
+            symbol=f'{coin}USDT',
+            side='BUY',
+            positionSide='SHORT',
+            type='STOP_MARKET',
+            stopPrice=round(stop_price,2),
+            closePosition=True,
+            workingType='MARK_PRICE',
+            timeInForce='GTE_GTC',
+            priceProtect=True     
+        )
+        
+        
+        #2nd barrier
+        client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=entry_2,
+        side='SELL',
+        positionSide='SHORT',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+    
+        #tp
+        client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=round(take_profit,2),
+        side='BUY',
+        positionSide='SHORT',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+        
+      
+        
+        
+        return order['orderId']
+    
+    
+def candle_size(x):
+    return abs(((x['close']-x['open'])/x['open'])*100)
