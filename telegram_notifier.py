@@ -31,8 +31,8 @@ exchange = ccxt.binanceus({
 })
 coin='AVAX'
 timeframe='5m'
-atr,period = 2,31
-stake=20
+atr,period = 2,76
+stake=40
 
 client=Client(config.api_key,config.secret_key)
 
@@ -128,7 +128,7 @@ while True:
             else:
                 msg=f'Skipping the trade'
                 notifier(msg)
-                
+                time.sleep(300)
             
                 
             
@@ -168,7 +168,8 @@ while True:
                 
             else:
                 msg=f'Skipping the trade'
-                notifier(msg)          
+                notifier(msg)    
+                time.sleep(300)      
     else:
         pass
     
