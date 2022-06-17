@@ -171,7 +171,13 @@ while True:
                 notifier(msg)    
                 time.sleep(300)      
     else:
-        pass
+        openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+        if len(openorders) == 1:
+            exchange.cancel_all_orders(f'{coin}USDT')
+        else:
+            pass
+            
+        
     
     
     time.sleep(20)
