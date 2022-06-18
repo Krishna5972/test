@@ -1,3 +1,4 @@
+from hamcrest import none
 import requests
 import pandas as pd
 from datetime import datetime
@@ -64,7 +65,30 @@ while True:
     
     super_df['upper_perc'],super_df['lower_perc']=zip(*super_df[['upperband','lowerband','close']].apply(atr_perc,axis=1))
     
-    
+    openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+
+    trade=none
+    if trade =='SELL':
+        if super_df.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
+            quantity=quantity*2
+            take_profit=entry_2-(entry_2*0.0135) 
+            change_tp(client,coin,trade,quantity,take_profit)
+        else:
+            pass
+    elif trade == 'BUY':
+        if super_df.iloc[-1]['low'] <= entry_2 & len(openorders) > 0:
+            take_profit=entry_2+(entry_2*0.0135)
+            change_tp(client,coin,trade,quantity,take_profit)
+        else:
+            pass
+
+
+
+
+
+
+
+
 
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
         
@@ -107,9 +131,10 @@ while True:
             max_percent=model_max.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
                         prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])
             
-            if max_pred == 0:
-                msg=f'Taking the trade'
+            if max_pred == 0 or max_pred == 1:
+                msg=f'Taking the trade {max_pred}'
                 notifier(msg)
+                trade='SELL'
                 
                 signal='SELL'
                 entry=super_df.iloc[-1]['close']
@@ -148,8 +173,8 @@ while True:
                         prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])[0]
             min_percent=model_min.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
                         prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])
-            if min_pred == 0:
-                msg=f'taking the trade'
+            if min_pred == 0 or  min_pred == 1:
+                msg=f'taking the trade {min_pred}'
                 notifier(msg)
                 
                 signal='BUY'
@@ -171,7 +196,6 @@ while True:
                 notifier(msg)    
                 time.sleep(300)      
     else:
-        openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
         if len(openorders) == 1:
             exchange.cancel_all_orders(f'{coin}USDT')
         else:
