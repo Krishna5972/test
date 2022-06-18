@@ -65,7 +65,7 @@ while True:
     super_df['upper_perc'],super_df['lower_perc']=zip(*super_df[['upperband','lowerband','close']].apply(atr_perc,axis=1))
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
-
+    
     trade=None
     if trade =='SELL':
         if super_df.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
@@ -80,14 +80,6 @@ while True:
             change_tp(client,coin,trade,quantity,take_profit)
         else:
             pass
-
-
-
-
-
-
-
-
 
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
         
@@ -195,8 +187,13 @@ while True:
                 notifier(msg)    
                 time.sleep(300)      
     else:
-        if len(openorders) == 2:
-            exchange.cancel_all_orders(f'{coin}USDT')
+        if len(openorders) > 0:  #if tp is hit,close based on open order type
+            limit_orders=0
+            for order in openorders:
+                if order['type'] == 'LIMIT':
+                    limit_orders+=1
+            if limit_orders == 1: #implies tp order is hit and entry_2 is open
+                exchange.cancel_all_orders(f'{coin}USDT')
         else:
             pass
             
