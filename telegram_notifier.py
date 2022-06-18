@@ -195,7 +195,7 @@ while True:
                 notifier(msg)    
                 time.sleep(300)      
     else:
-        if len(openorders) == 1:
+        if len(openorders) == 2:
             exchange.cancel_all_orders(f'{coin}USDT')
         else:
             pass
