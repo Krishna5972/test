@@ -66,7 +66,7 @@ while True:
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
 
-    trade=none
+    trade=None
     if trade =='SELL':
         if super_df.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
             quantity=quantity*2
