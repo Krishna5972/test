@@ -1,4 +1,3 @@
-from hamcrest import none
 import requests
 import pandas as pd
 from datetime import datetime
