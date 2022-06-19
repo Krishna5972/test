@@ -56,6 +56,10 @@ while True:
     df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
     df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
 
+    bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe='1m', limit=2)
+    df_1m = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
+    df_1m['OpenTime'] = pd.to_datetime(df_1m['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
+
     super_df=supertrend(df,period,atr)
     
     trade_df=create_signal_df(super_df,df,coin,timeframe,atr,period,100,100)
@@ -72,14 +76,14 @@ while True:
 
     trade=None
     if trade =='SELL':
-        if super_df.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
+        if df_1m.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
             quantity=quantity*2
             take_profit=entry_2-(entry_2*0.0135) 
             change_tp(client,coin,trade,quantity,take_profit)
         else:
             pass
     elif trade == 'BUY':
-        if super_df.iloc[-1]['low'] <= entry_2 & len(openorders) > 0:
+        if df_1m.iloc[-1]['low'] <= entry_2 & len(openorders) > 0:
             take_profit=entry_2+(entry_2*0.0135)
             change_tp(client,coin,trade,quantity,take_profit)
         else:
