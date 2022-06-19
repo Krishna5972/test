@@ -43,9 +43,9 @@ client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
 precision=0
 pricePrecision=2
 
-model_max=pickle.load(open('models/logreg_buy.sav','rb'))
+model_max=pickle.load(open('models/logreg_buy_new.sav','rb'))
 
-model_min=pickle.load(open('models/logreg_sell.sav','rb'))
+model_min=pickle.load(open('models/logreg_sell_new.sav','rb'))
 
 
 
