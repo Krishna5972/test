@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime
 import time
 import ccxt
-from sympy import to_cnf
 import config
 from binance.client import Client
 import pandas as pd
