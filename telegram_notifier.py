@@ -85,7 +85,7 @@ while True:
         
         
 
-    if super_df.iloc[-1]['in_uptrend'] == super_df.iloc[-2]['in_uptrend']:
+    if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
       
 
         feature_values,signal=features(super_df,trade_df)
