@@ -33,7 +33,7 @@ exchange = ccxt.binanceus({
 
 coin='AVAX'
 timeframe='5m'
-atr,period = 2,76
+atr_trend,period = 2,76
 stake=40
 
 client=Client(config.api_key,config.secret_key)
@@ -54,51 +54,18 @@ model_min=pickle.load(open('models/logreg_sell_new.sav','rb'))
 while True:
     msg='Scanning for change in trend'
     print(msg)
-    bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=350)
-    df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-    df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
-
-    bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe='1m', limit=2)
-    df_1m = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-    df_1m['OpenTime'] = pd.to_datetime(df_1m['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
-
-    super_df=supertrend(df,period,atr)
     
-    trade_df=create_signal_df(super_df,df,coin,timeframe,atr,period,100,100)
-    trade_df['max']=((trade_df['local_max']-trade_df['entry'])/trade_df['entry'])*100
-    trade_df['min']=((trade_df['local_min']-trade_df['entry'])/trade_df['entry'])*100
 
-    super_df['ema_20_pos']=super_df[['ema_20','close']].apply(ema_pos,col_name='ema_20',axis=1)
-    super_df['ema_33_pos']=super_df[['ema_33','close']].apply(ema_pos,col_name='ema_33',axis=1)
-    super_df['ema_55_pos']=super_df[['ema_55','close']].apply(ema_pos,col_name='ema_55',axis=1)
-    
-    super_df['upper_perc'],super_df['lower_perc']=zip(*super_df[['upperband','lowerband','close']].apply(atr_perc,axis=1))
+    super_df,trade_df,df_1m=fetch_data(exchange,coin,timeframe,period,atr_trend,change_in_tp)
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
 
-    
-    if trade =='SELL':
-        if (df_1m.iloc[-1]['high'] >= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
-            quantity=quantity*2
-            take_profit=entry_2-(entry_2*0.0135) 
-            exchange.cancel_order(tp_order_id, f'{coin}USDT')
-            tp_order_id=change_tp(client,coin,trade,quantity,take_profit) 
-            change_in_tp=1
-            notifier('change in tp')
-        else:
-            pass
-    elif trade == 'BUY':
-        if (df_1m.iloc[-1]['low'] <= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
-            quantity=quantity*2
-            take_profit=entry_2+(entry_2*0.0135)
-            exchange.cancel_order(tp_order_id, f'{coin}USDT')
-            tp_order_id=change_tp(client,coin,trade,quantity,take_profit)
-            notifier('change in tp')
-            change_in_tp=1
-        else:
-            pass
+    tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
+
+
 
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+        
         
             
         
@@ -186,6 +153,7 @@ while True:
                 msg=f'taking the trade {min_pred}'
                 notifier(msg)
                 
+                trade='SELL'
                 signal='BUY'
                 entry=super_df.iloc[-1]['close']
                 stop_price=entry-(entry*0.016)  #stop_loss_uptrend  
@@ -226,7 +194,7 @@ while True:
                 change_in_tp=0
                 notifier('No TP, canceling all open orders')
                 
-            openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+            
     
 
         else:
