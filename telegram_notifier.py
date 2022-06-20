@@ -230,7 +230,7 @@ while True:
     
 
         else:
-            pass
+            change_in_tp=0
             
         
     
