@@ -47,11 +47,11 @@ change_in_tp=0
 entry_2=0
 quantity =0
 tp_order_id=0
+predict_order_type=None
 
+model_max=pickle.load(open('models/logreg_max_1.8.sav','rb'))
 
-model_max=pickle.load(open('models/logreg_buy_new.sav','rb'))
-
-model_min=pickle.load(open('models/logreg_sell_new.sav','rb'))
+model_min=pickle.load(open('models/logreg_min_1.5.sav','rb'))
 
 
 
@@ -64,119 +64,191 @@ while True:
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
 
-    tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
-
-
-
-    if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
-        
-        
+    if predict_order_type == 'ENTRY_LIMIT':
+        if (signal == 'SELL') & (df_1m.iloc[-1]['high'] >= entry) & (len(openorders)==0):
+            try:
+                tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit) 
+            except Exception as e:
+                entry=10000
+            finally:
+                predict_order_type=None
+        elif (signal == 'BUY') & (df_1m.iloc[-1]['low'] <= entry) & ((len(openorders)==0)):
+            try:
+                tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit)
+            except Exception as e:
+                entry=-1
             
+            finally:
+                predict_order_type=None
+    elif predict_order_type == 'RE-ENTRY':
+        tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
         
-        signal = [1 if super_df.iloc[-1]['in_uptrend'] == True else 0][0]
-        ema_55_pos = [1 if super_df.iloc[-1]['ema_55_pos'] == 'above' else 0][0]
-        ema_20_pos = [1 if super_df.iloc[-1]['ema_20_pos'] == 'above' else 0][0]
-        ema_33_pos = [1 if super_df.iloc[-1]['ema_33_pos'] == 'above' else 0][0]
         
-        size=super_df.iloc[-1]['size']*100
+
+    if super_df.iloc[-1]['in_uptrend'] == super_df.iloc[-2]['in_uptrend']:
+      
+
+        feature_values,signal=features(super_df,trade_df)
         
-        upper_perc=np.abs(super_df.iloc[-1]['upper_perc'])*100
-        lower_perc=np.abs(super_df.iloc[-1]['lower_perc'])*100
+        
+
+        try:
+            close_position(client,coin,signal)
+        except Exception as e:
+            msg=f'Tried to close but no positions are open'
+            notifier(msg)
+            
+        exchange.cancel_all_orders(f'{coin}USDT')
+            
+
     
+        max_pred=model_max.predict([feature_values])[0]
+        max_percent=model_max.predict_proba([feature_values])
         
-        rsi = super_df.iloc[-1]['rsi']
-        prev_trend_1=trade_df.iloc[-1]['candle_count']
-        prev_trend_2=trade_df.iloc[-2]['candle_count']
-        prev_local_max_bar=trade_df.iloc[-1]['local_max_bar']
-        prev_local_min_bar=trade_df.iloc[-1]['local_min_bar']
-        prev_max_per=trade_df.iloc[-1]['max']
-        prev_min_per=trade_df.iloc[-1]['min']
         
-        if super_df.iloc[-1]['in_uptrend']==True:
-            
-            try:
-                prev_position='BUY'
-                close_position(client,coin,prev_position)
-            except Exception as e:
-                msg=f'Tried to close but no positions are open'
-                notifier(msg)
-                
-            exchange.cancel_all_orders(f'{coin}USDT')
-                
-
+        min_pred=model_min.predict([feature_values])[0]
+        min_percent=model_min.predict_proba([feature_values])
         
-            max_pred=model_max.predict([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
-                        prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])[0]
-            max_percent=model_max.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
-                        prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])
-            
-            if max_pred == 0 or max_pred == 1:
-                msg=f'Taking the trade {max_pred}'
-                notifier(msg)
-                trade='SELL'
-                
-                signal='SELL'
-                entry=super_df.iloc[-1]['close']
-                stop_price=entry+(entry*0.0185)  #stop_loss_uptrend     
-                entry_2 = round(entry + (entry*0.01),2) #2nd_entry_uptrend
-                take_profit=entry-(entry*0.0135)   #tp_uptrend
-                
-                quantity=stake/entry
-                quantity = int(round(quantity, precision))
-                stop_price=float(round(stop_price, pricePrecision))
-                take_profit=float(round(take_profit, pricePrecision))
-                change_in_tp=0
-                
-                tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
-                time.sleep(300)
-                
-            else:
-                msg=f'Skipping the trade'
-                notifier(msg)
-                time.sleep(300)
-            
-                
-            
-            
-        if super_df.iloc[-1]['in_uptrend']==False:
-            
-            try:
-                prev_position='SELL'
-                close_position(client,coin,prev_position)
-            except Exception as e:
-                msg=f'Tried to close but no positions are open'
-                notifier(msg)
-                
-            exchange.cancel_all_orders(f'{coin}USDT')
+        notifier(f'max pred : {max_pred}')
+        notifier(f'min pred : {min_pred}')
         
-            min_pred=model_min.predict([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
-                        prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])[0]
-            min_percent=model_min.predict_proba([[signal,ema_55_pos,ema_20_pos,ema_33_pos,rsi,prev_trend_1,prev_trend_2,
-                        prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,upper_perc,lower_perc,size]])
-            if min_pred == 0 or  min_pred == 1:
-                msg=f'taking the trade {min_pred}'
-                notifier(msg)
-                
-                trade='BUY'
-                signal='BUY'
-                entry=super_df.iloc[-1]['close']
-                stop_price=entry-(entry*0.016)  #stop_loss_uptrend  
-                entry_2 = round(entry - (entry*0.011),2) #2nd_entry_uptrend
-                take_profit=entry+(entry*0.0135)   #tp_uptrend
-                
-                quantity=stake/entry
-                quantity = int(round(quantity, precision))
-                stop_price=float(round(stop_price, pricePrecision))
-                take_profit=float(round(take_profit, pricePrecision))
-                change_in_tp=0
-                
-                tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
-                time.sleep(300)
-                
-            else:
-                msg=f'Skipping the trade'
-                notifier(msg)    
-                time.sleep(300)      
+        if (max_pred ==0) & (min_pred == 0) & (signal == 1):
+            msg=f'Taking the trade 001'
+            notifier(msg)
+            
+            trade='SELL'
+            signal='SELL'
+            
+            entry=super_df.iloc[-1]['close']
+ 
+            entry = round(entry + (entry*0.006),2) #2nd_entry_uptrend
+            stop_price=entry+(entry*0.0135)   #stop_loss_uptrend  
+            take_profit=entry-(entry*0.015)   #tp_uptrend
+            
+            quantity=stake/entry
+            quantity = int(round(quantity, precision))
+            stop_price=float(round(stop_price, pricePrecision))
+            take_profit=float(round(take_profit, pricePrecision))
+            change_in_tp=0
+            predict_order_type='ENTRY_LIMIT'
+            create_limit_order(client,coin,signal,entry,quantity)
+            time.sleep(300)
+            
+        elif (max_pred ==0) & (min_pred == 1) & (signal == 0):
+            msg=f'Taking the trade 001'
+            notifier(msg)
+            
+            trade='SELL'
+            signal='SELL'
+            
+            entry=super_df.iloc[-1]['close']
+ 
+            entry = round(entry + (entry*0.006),2) #2nd_entry_uptrend
+            stop_price=entry+(entry*0.0135)   #stop_loss_uptrend  
+            take_profit=entry-(entry*0.01)   #tp_uptrend
+            
+            quantity=stake/entry
+            quantity = int(round(quantity, precision))
+            stop_price=float(round(stop_price, pricePrecision))
+            take_profit=float(round(take_profit, pricePrecision))
+            change_in_tp=0
+            predict_order_type='ENTRY_LIMIT'
+            create_limit_order(client,coin,signal,entry,quantity)
+            time.sleep(300)
+            
+            
+            
+        elif (max_pred ==0) & (min_pred == 0) & (signal == 0):
+            msg=f'Taking the trade sell'
+            notifier(msg)
+            
+            trade='SELL'
+            signal='SELL'
+            
+            entry=super_df.iloc[-1]['close']
+            
+            stop_price=entry+(entry*0.0188)  #stop_loss_uptrend     
+            entry_2 = round(entry + (entry*0.0135),2) #2nd_entry_uptrend
+            take_profit=entry-(entry*0.0135)   #tp_uptrend
+            
+            quantity=stake/entry
+            quantity = int(round(quantity, precision))
+            stop_price=float(round(stop_price, pricePrecision))
+            take_profit=float(round(take_profit, pricePrecision))
+            change_in_tp=0
+            predict_order_type == 'RE-ENTRY'
+            
+            tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
+            time.sleep(300)
+            
+        elif (max_pred ==1) & (min_pred == 1) & (signal == 0):
+            msg=f'Taking the trade sell'
+            notifier(msg)
+            
+            trade='BUY'
+            signal='BUY'
+            
+            entry=super_df.iloc[-1]['close']
+            
+            stop_price=entry-(entry*0.025) 
+            entry = round(entry - (entry*0.0135),2) #2nd_entry_uptrend  
+            take_profit=entry+(entry*0.02)   #tp_uptrend  
+            quantity=stake/entry
+            quantity = int(round(quantity, precision))
+            stop_price=float(round(stop_price, pricePrecision))
+            take_profit=float(round(take_profit, pricePrecision))
+            change_in_tp=0
+            predict_order_type='ENTRY_LIMIT'
+            create_limit_order(client,coin,signal,entry,quantity)
+            time.sleep(300)
+        
+        elif (max_pred ==1) & (min_pred == 1) & (signal == 1):
+            msg=f'Taking the trade sell'
+            notifier(msg)
+            
+            trade='SELL'
+            signal='SELL'
+            
+            entry=super_df.iloc[-1]['close']
+            
+             
+            entry = round(entry + (entry*0.0135),2) #2nd_entry_uptrend  
+            stop_price=entry+(entry*0.02)
+            take_profit=entry-(entry*0.02)   #tp_uptrend  
+            quantity=stake/entry
+            quantity = int(round(quantity, precision))
+            stop_price=float(round(stop_price, pricePrecision))
+            take_profit=float(round(take_profit, pricePrecision))
+            change_in_tp=0
+            predict_order_type='ENTRY_LIMIT'
+            create_limit_order(client,coin,signal,entry,quantity)
+            time.sleep(300)
+            
+        elif (max_pred ==1) & (min_pred == 0) & (signal == 1):
+            msg=f'Taking the trade sell'
+            notifier(msg)
+            
+            trade='BUY'
+            signal='BUY'
+            
+            entry=super_df.iloc[-1]['close']
+ 
+            entry = round(entry - (entry*0.007),2) #2nd_entry_uptrend  
+            stop_price=entry+(entry*0.0135)
+            take_profit=entry-(entry*0.0135)   #tp_uptrend  
+            quantity=stake/entry
+            quantity = int(round(quantity, precision))
+            stop_price=float(round(stop_price, pricePrecision))
+            take_profit=float(round(take_profit, pricePrecision))
+            change_in_tp=0
+            predict_order_type='ENTRY_LIMIT'
+            create_limit_order(client,coin,signal,entry,quantity)
+            time.sleep(300)
+            
+        else:
+            msg=f'Exception case 1 0 0'
+            notifier(msg)
+            time.sleep(300)    
     else:
         openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
         if len(openorders) > 0:  #if tp is hit,close based on open order type
@@ -190,13 +262,14 @@ while True:
                 if order['type'] == 'LIMIT':
                     limit_orders+=1
                     
-            if stop_market_orders == 0: #implies tp order is hit and entry_2 is open
-                exchange.cancel_all_orders(f'{coin}USDT')
-                notifier('No stop market orders, canceling all open orders')
-            if tp_order_id not in open_order_ids:
-                exchange.cancel_all_orders(f'{coin}USDT')
-                change_in_tp=0
-                notifier('No TP, canceling all open orders')
+            if predict_order_type =='RE-ENTRY':        
+                if stop_market_orders == 0: #implies tp order is hit and entry_2 is open
+                    exchange.cancel_all_orders(f'{coin}USDT')
+                    notifier('No stop market orders, canceling all open orders')
+                if tp_order_id not in open_order_ids:
+                    exchange.cancel_all_orders(f'{coin}USDT')
+                    change_in_tp=0
+                    notifier('No TP, canceling all open orders')
                 
             
     

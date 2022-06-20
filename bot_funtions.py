@@ -346,6 +346,24 @@ def close_position(client,coin,signal):
     else:
         client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=1000,dualSidePosition=True,positionSide='SHORT')
         
+def create_limit_order(client,coin,signal,entry,quantity):
+    if signal == 'BUY':
+        #2nd barrier
+        barrier_order=client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=entry,
+        side='BUY',
+        positionSide='LONG',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )   
+        
         
 def change_tp(client,coin,signal,quantity,take_profit):
     if signal == 'SELL':
@@ -383,6 +401,81 @@ def change_tp(client,coin,signal,quantity,take_profit):
         priceProtect=True  
         )
         return order['orderId']
+
+def create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit):
+    if signal=='BUY':
+        
+        #SL
+        client.futures_create_order(
+        symbol=f'{coin}USDT',
+        side='SELL',
+        positionSide='LONG',
+        type='STOP_MARKET',
+        stopPrice=round(stop_price,2),
+        closePosition=True,
+        timeInForce='GTE_GTC',
+        workingType='MARK_PRICE',
+        priceProtect=True
+        
+        )
+        
+        #tp
+        tp_order=client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=round(take_profit,2),
+        side='SELL',
+        positionSide='LONG',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+        
+        return tp_order['orderId']
+    
+    
+            
+    elif signal=='SELL':
+  
+        #Sl
+        client.futures_create_order(
+            symbol=f'{coin}USDT',
+            side='BUY',
+            positionSide='SHORT',
+            type='STOP_MARKET',
+            stopPrice=round(stop_price,2),
+            closePosition=True,
+            workingType='MARK_PRICE',
+            timeInForce='GTE_GTC',
+            priceProtect=True     
+        )
+        
+        #tp
+        tp_order=client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=round(take_profit,2),
+        side='BUY',
+        positionSide='SHORT',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+        
+      
+        
+        
+        return tp_order['orderId']
+
+
 
 def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
     if signal=='BUY':
@@ -441,7 +534,6 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
     
             
     elif signal=='SELL':
-        print('new')
         #sell
         order=client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
         
@@ -550,3 +642,49 @@ def handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in
 
     
     return tp_order_id,change_in_tp
+
+
+def features(super_df,trade_df):
+            
+            trade_df['max_bin']=[1 if x > 1.8 else 0 for x in trade_df['max']]
+            trade_df['min_bin']=[1 if x < -1.5 else 0 for x in trade_df['min']]
+            
+            signal = [1 if super_df.iloc[-1]['in_uptrend'] == True else 0][0]
+            ema_55_pos = [1 if super_df.iloc[-1]['ema_55_pos'] == 'above' else 0][0]
+            ema_20_pos = [1 if super_df.iloc[-1]['ema_20_pos'] == 'above' else 0][0]
+            ema_33_pos = [1 if super_df.iloc[-1]['ema_33_pos'] == 'above' else 0][0]
+            
+            size=super_df.iloc[-1]['size']*100
+            
+            upper_perc=np.abs(super_df.iloc[-1]['upper_perc'])*100
+            lower_perc=np.abs(super_df.iloc[-1]['lower_perc'])*100
+        
+            
+            rsi = super_df.iloc[-1]['rsi']
+            prev_trend_1=trade_df.iloc[-1]['candle_count']
+            prev_trend_2=trade_df.iloc[-2]['candle_count']
+            prev_local_max_bar=trade_df.iloc[-1]['local_max_bar']
+            prev_local_min_bar=trade_df.iloc[-1]['local_min_bar']
+            prev_max_per=trade_df.iloc[-1]['max']
+            prev_min_per=trade_df.iloc[-1]['min']
+            
+            for i in range(1,5):
+                trade_df[f'prev_max_{i}']=trade_df['max_bin'].shift(i)
+            
+            prev_max_1=trade_df['max_bin'].iloc[-1]
+            prev_max_two=trade_df['max_bin'].iloc[-1]+trade_df['prev_max_1'].iloc[-1]
+            prev_max_three=trade_df['max_bin'].iloc[-1]+trade_df['prev_max_1'].iloc[-1]+trade_df['prev_max_2'].iloc[-1]
+            prev_max_four=trade_df['max_bin'].iloc[-1]+trade_df['prev_max_1'].iloc[-1]+trade_df['prev_max_2'].iloc[-1]+trade_df['prev_max_3'].iloc[-1]
+            
+            for i in range(1,5):
+                trade_df[f'prev_min_{i}']=trade_df['min_bin'].shift(i)
+                
+            prev_min_1 =trade_df['min_bin'].iloc[-1]
+            prev_min_two=trade_df['min_bin'].iloc[-1]+trade_df['prev_min_1'].iloc[-1]
+            prev_min_three=trade_df['min_bin'].iloc[-1]+trade_df['prev_min_1'].iloc[-1]+trade_df['prev_min_2'].iloc[-1]
+            prev_min_four=trade_df['min_bin'].iloc[-1]+trade_df['prev_min_1'].iloc[-1]+trade_df['prev_min_2'].iloc[-1]+trade_df['prev_min_3'].iloc[-1]
+            
+            
+            return ([signal,ema_55_pos,ema_20_pos,ema_33_pos,size,upper_perc,lower_perc,rsi,prev_trend_1,prev_trend_2,
+                    prev_local_max_bar,prev_local_min_bar,prev_max_per,prev_min_per,prev_max_1,prev_max_two,prev_max_three,prev_max_four,
+                    prev_min_1,prev_min_two,prev_min_three,prev_min_four]),signal
