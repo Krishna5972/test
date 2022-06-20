@@ -42,6 +42,7 @@ client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
 
 precision=0
 pricePrecision=2
+trade=None
 
 model_max=pickle.load(open('models/logreg_buy_new.sav','rb'))
 
@@ -74,7 +75,7 @@ while True:
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
 
-    trade=None
+    
     if trade =='SELL':
         if df_1m.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
             quantity=quantity*2
@@ -201,18 +202,21 @@ while True:
     else:
         if len(openorders) > 0:  #if tp is hit,close based on open order type
             stop_market_orders=0
+            limit_orders=0
             open_order_ids=[]
             for order in openorders:
                 open_order_ids.append(order['orderId'])
                 if order['type'] == 'STOP_MARKET':
                     stop_market_orders+=1
+                if order['type'] == 'LIMIT':
+                    limit_orders+=1
+                    
             if stop_market_orders == 0: #implies tp order is hit and entry_2 is open
                 exchange.cancel_all_orders(f'{coin}USDT')
-            
-            if tp_order_id not in open_order_ids:
+            if limit_orders == 0:
                 exchange.cancel_all_orders(f'{coin}USDT')
-                
-            
+                notifier('No TP, canceling all open orders')
+
         else:
             pass
             
