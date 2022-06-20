@@ -80,12 +80,16 @@ while True:
             quantity=quantity*2
             take_profit=entry_2-(entry_2*0.0135) 
             change_tp(client,coin,trade,quantity,take_profit)
+            exchange.cancel_order(order_id, f'{coin}USDT')
+            notifier('change in tp')
         else:
             pass
     elif trade == 'BUY':
         if df_1m.iloc[-1]['low'] <= entry_2 & len(openorders) > 0:
             take_profit=entry_2+(entry_2*0.0135)
             change_tp(client,coin,trade,quantity,take_profit)
+            exchange.cancel_order(order_id, f'{coin}USDT')
+            notifier('change in tp')
         else:
             pass
 
@@ -146,7 +150,7 @@ while True:
                 stop_price=float(round(stop_price, pricePrecision))
                 take_profit=float(round(take_profit, pricePrecision))
                 
-                create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
+                order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
                 time.sleep(300)
                 
             else:
@@ -187,7 +191,7 @@ while True:
                 stop_price=float(round(stop_price, pricePrecision))
                 take_profit=float(round(take_profit, pricePrecision))
                 
-                create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
+                order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
                 time.sleep(300)
                 
             else:
