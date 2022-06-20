@@ -350,7 +350,7 @@ def close_position(client,coin,signal):
 def change_tp(client,coin,signal,quantity,take_profit):
     if signal == 'SELL':
         #when 2nd_barrier gets hit change in tp
-        client.futures_create_order(
+        order=client.futures_create_order(
         symbol=f'{coin}USDT',
         price=round(take_profit,2),
         side='BUY',
@@ -364,9 +364,11 @@ def change_tp(client,coin,signal,quantity,take_profit):
         workingType='MARK_PRICE',
         priceProtect=True 
         )
+        return order['orderId']
+        
     else:
         #tp
-        client.futures_create_order(
+        order=client.futures_create_order(
         symbol=f'{coin}USDT',
         price=round(take_profit,2),
         side='SELL',
@@ -380,6 +382,7 @@ def change_tp(client,coin,signal,quantity,take_profit):
         workingType='MARK_PRICE',
         priceProtect=True  
         )
+        return order['orderId']
 
 def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
     if signal=='BUY':

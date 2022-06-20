@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 import time
 import ccxt
+from sympy import to_cnf
 import config
 from binance.client import Client
 import pandas as pd
@@ -43,6 +44,7 @@ client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
 precision=0
 pricePrecision=2
 trade=None
+change_in_tp=0
 
 model_max=pickle.load(open('models/logreg_buy_new.sav','rb'))
 
@@ -77,20 +79,22 @@ while True:
 
     
     if trade =='SELL':
-        if df_1m.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
+        if (df_1m.iloc[-1]['high'] >= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
             quantity=quantity*2
             take_profit=entry_2-(entry_2*0.0135) 
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
-            change_tp(client,coin,trade,quantity,take_profit) 
+            tp_order_id=change_tp(client,coin,trade,quantity,take_profit) 
+            change_in_tp=1
             notifier('change in tp')
         else:
             pass
     elif trade == 'BUY':
-        if df_1m.iloc[-1]['low'] <= entry_2 & len(openorders) > 0:
+        if (df_1m.iloc[-1]['low'] <= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
             take_profit=entry_2+(entry_2*0.0135)
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
-            change_tp(client,coin,trade,quantity,take_profit)
+            tp_order_id=change_tp(client,coin,trade,quantity,take_profit)
             notifier('change in tp')
+            change_in_tp=1
         else:
             pass
 
@@ -150,6 +154,7 @@ while True:
                 quantity = int(round(quantity, precision))
                 stop_price=float(round(stop_price, pricePrecision))
                 take_profit=float(round(take_profit, pricePrecision))
+                change_in_tp=0
                 
                 tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
                 time.sleep(300)
@@ -191,6 +196,7 @@ while True:
                 quantity = int(round(quantity, precision))
                 stop_price=float(round(stop_price, pricePrecision))
                 take_profit=float(round(take_profit, pricePrecision))
+                change_in_tp=0
                 
                 tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
                 time.sleep(300)
@@ -200,6 +206,7 @@ while True:
                 notifier(msg)    
                 time.sleep(300)      
     else:
+        openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
         if len(openorders) > 0:  #if tp is hit,close based on open order type
             stop_market_orders=0
             limit_orders=0
@@ -213,9 +220,14 @@ while True:
                     
             if stop_market_orders == 0: #implies tp order is hit and entry_2 is open
                 exchange.cancel_all_orders(f'{coin}USDT')
-            if limit_orders == 0:
+                notifier('No stop market orders, canceling all open orders')
+            if tp_order_id not in open_order_ids:
                 exchange.cancel_all_orders(f'{coin}USDT')
+                change_in_tp=0
                 notifier('No TP, canceling all open orders')
+                
+            openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+    
 
         else:
             pass
