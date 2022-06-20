@@ -384,7 +384,7 @@ def change_tp(client,coin,signal,quantity,take_profit):
 def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
     if signal=='BUY':
         #buy
-        order=client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+        client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
         
         
         #SL
@@ -402,7 +402,7 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
         )
         
         #2nd barrier
-        client.futures_create_order(
+        barrier_order=client.futures_create_order(
         symbol=f'{coin}USDT',
         price=entry_2,
         side='BUY',
@@ -418,7 +418,7 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
         )
 
         #tp
-        client.futures_create_order(
+        tp_order=client.futures_create_order(
         symbol=f'{coin}USDT',
         price=round(take_profit,2),
         side='SELL',
@@ -433,7 +433,7 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
         priceProtect=True  
         )
         
-        return order['orderId']
+        return tp_order['orderId'],barrier_order['orderId']
     
     
             
@@ -457,7 +457,7 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
         
         
         #2nd barrier
-        client.futures_create_order(
+        barrier_order=client.futures_create_order(
         symbol=f'{coin}USDT',
         price=entry_2,
         side='SELL',
@@ -473,7 +473,7 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
         )
     
         #tp
-        client.futures_create_order(
+        tp_order=client.futures_create_order(
         symbol=f'{coin}USDT',
         price=round(take_profit,2),
         side='BUY',
@@ -491,7 +491,7 @@ def create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit):
       
         
         
-        return order['orderId']
+        return tp_order['orderId'],barrier_order['orderId']
     
     
 def candle_size(x):
