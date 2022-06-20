@@ -79,16 +79,16 @@ while True:
         if df_1m.iloc[-1]['high'] >= entry_2 & len(openorders) > 0:
             quantity=quantity*2
             take_profit=entry_2-(entry_2*0.0135) 
-            change_tp(client,coin,trade,quantity,take_profit)
-            exchange.cancel_order(order_id, f'{coin}USDT')
+            exchange.cancel_order(tp_order_id, f'{coin}USDT')
+            change_tp(client,coin,trade,quantity,take_profit) 
             notifier('change in tp')
         else:
             pass
     elif trade == 'BUY':
         if df_1m.iloc[-1]['low'] <= entry_2 & len(openorders) > 0:
             take_profit=entry_2+(entry_2*0.0135)
+            exchange.cancel_order(tp_order_id, f'{coin}USDT')
             change_tp(client,coin,trade,quantity,take_profit)
-            exchange.cancel_order(order_id, f'{coin}USDT')
             notifier('change in tp')
         else:
             pass
@@ -150,7 +150,7 @@ while True:
                 stop_price=float(round(stop_price, pricePrecision))
                 take_profit=float(round(take_profit, pricePrecision))
                 
-                order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
+                tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
                 time.sleep(300)
                 
             else:
@@ -191,7 +191,7 @@ while True:
                 stop_price=float(round(stop_price, pricePrecision))
                 take_profit=float(round(take_profit, pricePrecision))
                 
-                order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
+                tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
                 time.sleep(300)
                 
             else:
@@ -201,11 +201,18 @@ while True:
     else:
         if len(openorders) > 0:  #if tp is hit,close based on open order type
             stop_market_orders=0
+            open_order_ids=[]
             for order in openorders:
+                open_order_ids.append(order['orderId'])
                 if order['type'] == 'STOP_MARKET':
                     stop_market_orders+=1
             if stop_market_orders == 0: #implies tp order is hit and entry_2 is open
                 exchange.cancel_all_orders(f'{coin}USDT')
+            
+            if tp_order_id not in open_order_ids:
+                exchange.cancel_all_orders(f'{coin}USDT')
+                
+            
         else:
             pass
             
