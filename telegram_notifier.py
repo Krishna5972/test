@@ -89,6 +89,7 @@ while True:
             pass
     elif trade == 'BUY':
         if (df_1m.iloc[-1]['low'] <= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
+            quantity=quantity*2
             take_profit=entry_2+(entry_2*0.0135)
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
             tp_order_id=change_tp(client,coin,trade,quantity,take_profit)
