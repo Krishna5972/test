@@ -44,6 +44,10 @@ precision=0
 pricePrecision=2
 trade=None
 change_in_tp=0
+entry_2=0
+quantity =0
+tp_order_id=0
+
 
 model_max=pickle.load(open('models/logreg_buy_new.sav','rb'))
 
@@ -56,7 +60,7 @@ while True:
     print(msg)
     
 
-    super_df,trade_df,df_1m=fetch_data(exchange,coin,timeframe,period,atr_trend,change_in_tp)
+    super_df,trade_df,df_1m=fetch_data(exchange,coin,timeframe,period,atr_trend)
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
 
@@ -153,7 +157,7 @@ while True:
                 msg=f'taking the trade {min_pred}'
                 notifier(msg)
                 
-                trade='SELL'
+                trade='BUY'
                 signal='BUY'
                 entry=super_df.iloc[-1]['close']
                 stop_price=entry-(entry*0.016)  #stop_loss_uptrend  
