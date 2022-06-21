@@ -65,9 +65,9 @@ while True:
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
     
-    if high >= df_1m.iloc[-1]['high']:
+    if high <= df_1m.iloc[-1]['high']:
             high=df_1m.iloc[-1]['high']
-    if low <= df_1m.iloc[-1]['low']:
+    if low >= df_1m.iloc[-1]['low']:
         low=df_1m.iloc[-1]['low']
 
     if predict_order_type == 'ENTRY_LIMIT':
@@ -104,12 +104,9 @@ while True:
         
 
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+        
         high,low = 0,10000
-      
-
         feature_values,signal=features(super_df,trade_df)
-        
-        
 
         try:
             close_position(client,coin,signal)
@@ -285,14 +282,13 @@ while True:
                 if stop_market_orders == 0: #implies tp order is hit and entry_2 is open
                     exchange.cancel_all_orders(f'{coin}USDT')
                     notifier('No stop market orders, canceling all open orders')
+                    predict_order_type=None
                 if tp_order_id not in open_order_ids:
                     exchange.cancel_all_orders(f'{coin}USDT')
                     change_in_tp=0
                     notifier('No TP, canceling all open orders')
+                    predict_order_type=None
                 
-            
-    
-
         else:
             change_in_tp=0
             

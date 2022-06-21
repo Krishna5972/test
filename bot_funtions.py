@@ -363,6 +363,23 @@ def create_limit_order(client,coin,signal,entry,quantity):
         workingType='MARK_PRICE',
         priceProtect=True  
         )   
+    else:
+        #2nd barrier
+        barrier_order=client.futures_create_order(
+        symbol=f'{coin}USDT',
+        price=entry,
+        side='SELL',
+        positionSide='SHORT',
+        quantity=quantity,
+        timeInForce='GTC',
+        type='LIMIT',
+        # reduceOnly=True,
+        closePosition=False,
+        # stopPrice=round(take_profit,2),
+        workingType='MARK_PRICE',
+        priceProtect=True  
+        )
+        
         
         
 def change_tp(client,coin,signal,quantity,take_profit):
