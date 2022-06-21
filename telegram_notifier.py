@@ -48,6 +48,7 @@ entry_2=0
 quantity =0
 tp_order_id=0
 predict_order_type=None
+high,low = 0,10000
 
 model_max=pickle.load(open('models/logreg_max_1.8.sav','rb'))
 
@@ -63,19 +64,36 @@ while True:
     super_df,trade_df,df_1m=fetch_data(exchange,coin,timeframe,period,atr_trend)
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+    
+    if high >= df_1m.iloc[-1]['high']:
+            high=df_1m.iloc[-1]['high']
+    if low <= df_1m.iloc[-1]['low']:
+        low=df_1m.iloc[-1]['low']
 
     if predict_order_type == 'ENTRY_LIMIT':
-        if (signal == 'SELL') & (df_1m.iloc[-1]['high'] >= entry) & (len(openorders)==0):
+        msg='Wating for the order to get filled, to open tp and sl'
+        print(msg)
+        
+        
+        if (signal == 'SELL') & (high >= entry) & (len(openorders)==0):
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit) 
+                msg='TP and SL placed'
+                print(msg)
             except Exception as e:
+                msg=f'BUG in placing tp and sl when order got filled : {e}'
+                print(msg)
                 entry=10000
+                
             finally:
                 predict_order_type=None
-        elif (signal == 'BUY') & (df_1m.iloc[-1]['low'] <= entry) & ((len(openorders)==0)):
+        elif (signal == 'BUY') & (low <= entry) & ((len(openorders)==0)):
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit)
+                msg='TP and SL placed'
             except Exception as e:
+                msg=f'BUG in placing tp and sl when order got filled : {e}'
+                print(msg)
                 entry=-1
             
             finally:
@@ -86,6 +104,7 @@ while True:
         
 
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+        high,low = 0,10000
       
 
         feature_values,signal=features(super_df,trade_df)
