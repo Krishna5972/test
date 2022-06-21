@@ -70,19 +70,21 @@ while True:
     if low >= df_1m.iloc[-1]['low']:
         low=df_1m.iloc[-1]['low']
 
+    notifier(predict_order_type)
+
     if predict_order_type == 'ENTRY_LIMIT':
         msg='Wating for the order to get filled, to open tp and sl'
-        print(msg)
+        notifier(msg)
         
-        
+        notifier(f'signal :{signal},high : {high},entry :{entry} , LEN :{len(openorders)}')
         if (signal == 'SELL') & (high >= entry) & (len(openorders)==0):
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit) 
                 msg='TP and SL placed'
-                print(msg)
+                notifier(msg)
             except Exception as e:
                 msg=f'BUG in placing tp and sl when order got filled : {e}'
-                print(msg)
+                notifier(msg)
                 entry=10000
                 
             finally:
