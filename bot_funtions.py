@@ -639,9 +639,14 @@ def handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in
             quantity=quantity*2
             take_profit=entry_2-(entry_2*0.0135) 
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
+            notifier(f'OLD TP order canceled : {tp_order_id}')
+            msg=f'''singal :{trade},quantity : {quantity},takeprofit :{take_profit},entry_2:{entry_2}
+        change_in_tp: {change_in_tp}, tp_order_id: {tp_order_id}
+        '''
+            print(msg)
             tp_order_id=change_tp(client,coin,trade,quantity,take_profit) 
+            notifier(f'New TP placed with order id: {tp_order_id}')
             change_in_tp=1
-            notifier('change in tp')
         else:
             pass
     elif trade == 'BUY':
@@ -649,8 +654,14 @@ def handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in
             quantity=quantity*2
             take_profit=entry_2+(entry_2*0.0135)
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
-            tp_order_id=change_tp(client,coin,trade,quantity,take_profit)
-            notifier('change in tp')
+            notifier(f'OLD TP order canceled : {tp_order_id}')
+            msg=f'''singal :{trade},quantity : {quantity},takeprofit :{take_profit},entry_2:{entry_2}
+        change_in_tp: {change_in_tp}, tp_order_id: {tp_order_id}
+        '''
+            print(msg)
+            tp_order_id=change_tp(client,coin,trade,quantity,take_profit) 
+            notifier(f'New TP placed with order id: {tp_order_id}')
+           
             change_in_tp=1
         else:
             pass
