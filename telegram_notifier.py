@@ -33,7 +33,7 @@ exchange = ccxt.binanceus({
 
 coin='AVAX'
 timeframe='5m'
-atr_trend,period = 2,76
+atr_trend,period = 2,5
 stake=40
 
 client=Client(config.api_key,config.secret_key)
@@ -81,13 +81,14 @@ while True:
                 msg='TP and SL placed'
                 notifier(msg)
                 entry=10000
+                predict_order_type=None
             except Exception as e:
                 msg=f'BUG in placing tp and sl when order got filled : {e}'
                 notifier(msg)
+                msg=f'singal :{signal},quantity : {quantity},stopprice: {stop_price},takeprofit :{take_profit} : {e}'
+                notifier(msg)
+        
                 
-                
-            finally:
-                predict_order_type=None
         elif (signal == 'BUY') & (low <= entry) & ((len(openorders)==0)):
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit)
@@ -97,7 +98,8 @@ while True:
             except Exception as e:
                 msg=f'BUG in placing tp and sl when order got filled : {e}'
                 notifier(msg)
-                
+                msg=f'singal :{signal},quantity : {quantity},stopprice: {stop_price},takeprofit :{take_profit} : {e}'
+                notifier(msg)
                 
     elif predict_order_type == 'RE-ENTRY':
         msg=f'Handling re-entry change_in_tp : {change_in_tp},openorders : {openorders}'
@@ -187,7 +189,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
             stop_price=entry+(entry*0.0188)  #stop_loss_uptrend     
-            entry_2 = round(entry + (entry*0.0135),2) #2nd_entry_uptrend
+            entry_2 = round(entry + (entry*0.002),2) #2nd_entry_uptrend
             take_profit=entry-(entry*0.0135)   #tp_uptrend
             
             quantity=stake/entry
@@ -210,7 +212,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
             stop_price=entry-(entry*0.025) 
-            entry = round(entry - (entry*0.0135),2) #2nd_entry_uptrend  
+            entry = round(entry - (entry*0.002),2) #2nd_entry_uptrend  
             take_profit=entry+(entry*0.02)   #tp_uptrend  
             quantity=stake/entry
             quantity = int(round(quantity, precision))
@@ -231,7 +233,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
              
-            entry = round(entry + (entry*0.0135),2) #2nd_entry_uptrend  
+            entry = round(entry + (entry*0.002),2) #2nd_entry_uptrend  
             stop_price=entry+(entry*0.02)
             take_profit=entry-(entry*0.02)   #tp_uptrend  
             quantity=stake/entry
@@ -252,7 +254,7 @@ while True:
             
             entry=super_df.iloc[-1]['close']
  
-            entry = round(entry - (entry*0.007),2) #2nd_entry_uptrend  
+            entry = round(entry - (entry*0.002),2) #2nd_entry_uptrend  
             stop_price=entry+(entry*0.0135)
             take_profit=entry-(entry*0.0135)   #tp_uptrend  
             quantity=stake/entry
@@ -299,5 +301,5 @@ while True:
     
     
     time.sleep(20)
-    
+
         
