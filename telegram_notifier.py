@@ -38,7 +38,7 @@ stake=40
 
 client=Client(config.api_key,config.secret_key)
 
-client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
+client.futures_change_leverage(symbol=f'{coin}USDT', leverage=10)
 
 precision=0
 pricePrecision=2
@@ -70,22 +70,21 @@ while True:
     if low >= df_1m.iloc[-1]['low']:
         low=df_1m.iloc[-1]['low']
 
-    notifier(predict_order_type)
-
     if predict_order_type == 'ENTRY_LIMIT':
         msg='Wating for the order to get filled, to open tp and sl'
         notifier(msg)
         
-        notifier(f'signal :{signal},high : {high},entry :{entry} , LEN :{len(openorders)}')
+        notifier(f'signal :{signal},high : {high},low : {low},entry :{entry} , LEN :{len(openorders)}')
         if (signal == 'SELL') & (high >= entry) & (len(openorders)==0):
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit) 
                 msg='TP and SL placed'
                 notifier(msg)
+                entry=10000
             except Exception as e:
                 msg=f'BUG in placing tp and sl when order got filled : {e}'
                 notifier(msg)
-                entry=10000
+                
                 
             finally:
                 predict_order_type=None
@@ -93,14 +92,16 @@ while True:
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit)
                 msg='TP and SL placed'
+                predict_order_type=None
+                entry=-1
             except Exception as e:
                 msg=f'BUG in placing tp and sl when order got filled : {e}'
-                print(msg)
-                entry=-1
-            
-            finally:
-                predict_order_type=None
+                notifier(msg)
+                
+                
     elif predict_order_type == 'RE-ENTRY':
+        msg=f'Handling re-entry change_in_tp : {change_in_tp},openorders : {openorders}'
+        print(msg)
         tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
         
         
