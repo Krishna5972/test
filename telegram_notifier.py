@@ -189,7 +189,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
             stop_price=entry+(entry*0.0188)  #stop_loss_uptrend     
-            entry_2 = round(entry + (entry*0.002),2) #2nd_entry_uptrend
+            entry_2 = round(entry + (entry*0.011),2) #2nd_entry_uptrend
             take_profit=entry-(entry*0.0135)   #tp_uptrend
             
             quantity=stake/entry
@@ -212,7 +212,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
             stop_price=entry-(entry*0.025) 
-            entry = round(entry - (entry*0.002),2) #2nd_entry_uptrend  
+            entry = round(entry - (entry*0.007),2) #2nd_entry_uptrend  
             take_profit=entry+(entry*0.02)   #tp_uptrend  
             quantity=stake/entry
             quantity = int(round(quantity, precision))
@@ -254,9 +254,9 @@ while True:
             
             entry=super_df.iloc[-1]['close']
  
-            entry = round(entry - (entry*0.002),2) #2nd_entry_uptrend  
-            stop_price=entry+(entry*0.0135)
-            take_profit=entry-(entry*0.0135)   #tp_uptrend  
+            entry = round(entry - (entry*0.007),2) #2nd_entry_uptrend  
+            stop_price=entry-(entry*0.0135)
+            take_profit=entry+(entry*0.0135)   #tp_uptrend  
             quantity=stake/entry
             quantity = int(round(quantity, precision))
             stop_price=float(round(stop_price, pricePrecision))
