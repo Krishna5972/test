@@ -33,7 +33,7 @@ exchange = ccxt.binanceus({
 
 coin='AVAX'
 timeframe='5m'
-atr_trend,period = 2,5
+atr_trend,period = 2,76
 stake=40
 
 client=Client(config.api_key,config.secret_key)
@@ -103,6 +103,10 @@ while True:
                 
     elif predict_order_type == 'RE-ENTRY':
         msg=f'Handling re-entry change_in_tp : {change_in_tp},openorders : {openorders}'
+        print(msg)
+        msg=f'''singal :{signal},quantity : {quantity},stopprice: {stop_price},takeprofit :{take_profit},entry_2:{entry_2}
+        change_in_tp: {change_in_tp}, tp_order_id: {tp_order_id}
+        '''
         print(msg)
         tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
         
@@ -233,7 +237,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
              
-            entry = round(entry + (entry*0.002),2) #2nd_entry_uptrend  
+            entry = round(entry + (entry*0.007),2) #2nd_entry_uptrend  
             stop_price=entry+(entry*0.02)
             take_profit=entry-(entry*0.02)   #tp_uptrend  
             quantity=stake/entry
