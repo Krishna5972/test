@@ -637,7 +637,7 @@ def handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in
     if trade =='SELL':
         if (df_1m.iloc[-1]['high'] >= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
             quantity=quantity*2
-            take_profit=entry_2-(entry_2*0.0135) 
+            take_profit=entry_2-(entry_2*0.011) 
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
             notifier(f'OLD TP order canceled : {tp_order_id}')
             msg=f'''singal :{trade},quantity : {quantity},takeprofit :{take_profit},entry_2:{entry_2}
@@ -652,7 +652,7 @@ def handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in
     elif trade == 'BUY':
         if (df_1m.iloc[-1]['low'] <= entry_2) & (len(openorders) > 0) & (change_in_tp==0):
             quantity=quantity*2
-            take_profit=entry_2+(entry_2*0.0135)
+            take_profit=entry_2+(entry_2*0.011)
             exchange.cancel_order(tp_order_id, f'{coin}USDT')
             notifier(f'OLD TP order canceled : {tp_order_id}')
             msg=f'''singal :{trade},quantity : {quantity},takeprofit :{take_profit},entry_2:{entry_2}

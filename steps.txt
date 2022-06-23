@@ -17,6 +17,7 @@ git push heroku master
 
 heroku ps:scale worker=1
 
+heroku ps:scale worker=0 #sleep
 
 heroku ps -a avax-telegram-notifier  #to-check-free-dyno hours
 
