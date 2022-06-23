@@ -59,8 +59,6 @@ model_min=pickle.load(open('models/logreg_min_1.5.sav','rb'))
 while True:
     msg='Scanning for change in trend'
     print(msg)
-    
-
     super_df,trade_df,df_1m=fetch_data(exchange,coin,timeframe,period,atr_trend)
     
     openorders=client.futures_get_open_orders(symbol=f'{coin}USDT')
@@ -102,12 +100,12 @@ while True:
                 notifier(msg)
                 
     elif predict_order_type == 'RE-ENTRY':
-        msg=f'Handling re-entry change_in_tp : {change_in_tp},openorders : {openorders}'
-        print(msg)
+        msg=f'Handling re-entry change_in_tp : {change_in_tp},openorders : {len(openorders)} , placeTPorderID: {tp_order_id}'
+        notifier(msg)
         msg=f'''singal :{signal},quantity : {quantity},stopprice: {stop_price},takeprofit :{take_profit},entry_2:{entry_2}
-        change_in_tp: {change_in_tp}, tp_order_id: {tp_order_id}
+        change_in_tp: {change_in_tp}
         '''
-        print(msg)
+        notifier(msg)
         tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
         
         
@@ -138,7 +136,7 @@ while True:
         notifier(f'min pred : {min_pred}')
         
         if (max_pred ==0) & (min_pred == 0) & (signal == 1):
-            msg=f'Taking the trade 001'
+            msg=f'LIMIT TYPE TRADE'
             notifier(msg)
             
             trade='SELL'
@@ -156,11 +154,12 @@ while True:
             take_profit=float(round(take_profit, pricePrecision))
             change_in_tp=0
             predict_order_type='ENTRY_LIMIT'
+            notifier(predict_order_type)
             create_limit_order(client,coin,signal,entry,quantity)
             time.sleep(300)
             
         elif (max_pred ==0) & (min_pred == 1) & (signal == 0):
-            msg=f'Taking the trade 001'
+            msg=f'LIMIT TYPE TRADE'
             notifier(msg)
             
             trade='SELL'
@@ -178,13 +177,14 @@ while True:
             take_profit=float(round(take_profit, pricePrecision))
             change_in_tp=0
             predict_order_type='ENTRY_LIMIT'
+            notifier(predict_order_type)
             create_limit_order(client,coin,signal,entry,quantity)
             time.sleep(300)
             
             
             
         elif (max_pred ==0) & (min_pred == 0) & (signal == 0):
-            msg=f'Taking the trade sell'
+            msg=f'MARKET TYPE TRADE'
             notifier(msg)
             
             trade='SELL'
@@ -193,21 +193,21 @@ while True:
             entry=super_df.iloc[-1]['close']
             
             stop_price=entry+(entry*0.0188)  #stop_loss_uptrend     
-            entry_2 = round(entry + (entry*0.011),2) #2nd_entry_uptrend
+            entry_2 = round(entry + (entry*0.0135),2) #2nd_entry_uptrend
             take_profit=entry-(entry*0.0135)   #tp_uptrend
             
             quantity=stake/entry
             quantity = int(round(quantity, precision))
             stop_price=float(round(stop_price, pricePrecision))
             take_profit=float(round(take_profit, pricePrecision))
-            change_in_tp=0
+            change_in_tp=0 
             predict_order_type == 'RE-ENTRY'
-            
+            notifier(predict_order_type)   
             tp_order_id,barier_order_id=create_order(client,coin,signal,quantity,entry_2,stop_price,take_profit)
             time.sleep(300)
             
         elif (max_pred ==1) & (min_pred == 1) & (signal == 0):
-            msg=f'Taking the trade sell'
+            msg=f'LIMIT TYPE TRADE'
             notifier(msg)
             
             trade='BUY'
@@ -216,7 +216,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
             stop_price=entry-(entry*0.025) 
-            entry = round(entry - (entry*0.007),2) #2nd_entry_uptrend  
+            entry = round(entry - (entry*0.0135),2) #2nd_entry_uptrend  
             take_profit=entry+(entry*0.02)   #tp_uptrend  
             quantity=stake/entry
             quantity = int(round(quantity, precision))
@@ -224,11 +224,12 @@ while True:
             take_profit=float(round(take_profit, pricePrecision))
             change_in_tp=0
             predict_order_type='ENTRY_LIMIT'
+            notifier(predict_order_type)
             create_limit_order(client,coin,signal,entry,quantity)
             time.sleep(300)
         
         elif (max_pred ==1) & (min_pred == 1) & (signal == 1):
-            msg=f'Taking the trade sell'
+            msg=f'LIMIT TYPE TRADE'
             notifier(msg)
             
             trade='SELL'
@@ -237,7 +238,7 @@ while True:
             entry=super_df.iloc[-1]['close']
             
              
-            entry = round(entry + (entry*0.007),2) #2nd_entry_uptrend  
+            entry = round(entry + (entry*0.0135),2) #2nd_entry_uptrend  
             stop_price=entry+(entry*0.02)
             take_profit=entry-(entry*0.02)   #tp_uptrend  
             quantity=stake/entry
@@ -246,11 +247,12 @@ while True:
             take_profit=float(round(take_profit, pricePrecision))
             change_in_tp=0
             predict_order_type='ENTRY_LIMIT'
+            notifier(predict_order_type)
             create_limit_order(client,coin,signal,entry,quantity)
             time.sleep(300)
             
         elif (max_pred ==1) & (min_pred == 0) & (signal == 1):
-            msg=f'Taking the trade sell'
+            msg=f'LIMIT TYPE TRADE'
             notifier(msg)
             
             trade='BUY'
@@ -259,14 +261,15 @@ while True:
             entry=super_df.iloc[-1]['close']
  
             entry = round(entry - (entry*0.007),2) #2nd_entry_uptrend  
-            stop_price=entry-(entry*0.0135)
-            take_profit=entry+(entry*0.0135)   #tp_uptrend  
+            stop_price=entry+(entry*0.0135)
+            take_profit=entry-(entry*0.0135)   #tp_uptrend  
             quantity=stake/entry
             quantity = int(round(quantity, precision))
             stop_price=float(round(stop_price, pricePrecision))
             take_profit=float(round(take_profit, pricePrecision))
             change_in_tp=0
             predict_order_type='ENTRY_LIMIT'
+            notifier(predict_order_type)
             create_limit_order(client,coin,signal,entry,quantity)
             time.sleep(300)
             
@@ -304,6 +307,4 @@ while True:
         
     
     
-    time.sleep(20)
-
-        
+    time.sleep(45)
