@@ -69,10 +69,7 @@ while True:
         low=df_1m.iloc[-1]['low']
 
     if predict_order_type == 'ENTRY_LIMIT':
-        msg='Wating for the order to get filled, to open tp and sl'
-        notifier(msg)
         
-        notifier(f'signal :{signal},high : {high},low : {low},entry :{entry} , LEN :{len(openorders)}')
         if (signal == 'SELL') & (high >= entry) & (len(openorders)==0):
             try:
                 tp_order_id=create_limit_tpsl(client,coin,signal,quantity,stop_price,take_profit) 
@@ -113,17 +110,16 @@ while True:
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
         
         high,low = 0,10000
-        feature_values,signal=features(super_df,trade_df)
-
+        
         try:
             close_position(client,coin,signal)
         except Exception as e:
-            msg=f'Tried to close but no positions are open'
+            msg=f'Tried to close but no positions are open : {e}'
             notifier(msg)
             
         exchange.cancel_all_orders(f'{coin}USDT')
             
-
+        feature_values,signal=features(super_df,trade_df)
     
         max_pred=model_max.predict([feature_values])[0]
         max_percent=model_max.predict_proba([feature_values])
