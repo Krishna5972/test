@@ -32,7 +32,7 @@ exchange = ccxt.binanceus({
 
 
 coin='AVAX'
-timeframe='5m'
+timeframe='1m'
 atr_trend,period = 2,76
 stake=1000
 
@@ -293,9 +293,11 @@ while True:
                     notifier('No TP, canceling all open orders')
                     predict_order_type=None
                 
-        else:
+        elif len(openorders) == 0 and change_in_tp == 1:
             predict_order_type=None
             change_in_tp=0
+        else:
+            pass
             
         
     
