@@ -32,7 +32,7 @@ exchange = ccxt.binanceus({
 
 
 coin='AVAX'
-timeframe='1m'
+timeframe='5m'
 atr_trend,period = 2,76
 stake=1000
 
