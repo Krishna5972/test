@@ -611,7 +611,7 @@ def candle_size(x):
 
 def fetch_data(exchange,coin,timeframe,period,atr_trend):
         bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=350)
-        df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
+        df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume']) #-1 as bars contain unclosed cnadle in its final row
         df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
 
         bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe='1m', limit=2)

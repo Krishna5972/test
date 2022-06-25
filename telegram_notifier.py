@@ -34,7 +34,7 @@ exchange = ccxt.binanceus({
 coin='AVAX'
 timeframe='5m'
 atr_trend,period = 2,76
-stake=100
+stake=1000
 
 client=Client(config.api_key,config.secret_key)
 
@@ -97,12 +97,6 @@ while True:
                 notifier(msg)
                 
     elif predict_order_type == 'RE-ENTRY':
-        msg=f'Handling re-entry change_in_tp : {change_in_tp},openorders : {len(openorders)} , placeTPorderID: {tp_order_id}'
-        notifier(msg)
-        msg=f'''singal :{signal},quantity : {quantity},stopprice: {stop_price},takeprofit :{take_profit},entry_2:{entry_2}
-        change_in_tp: {change_in_tp}
-        '''
-        notifier(msg)
         tp_order_id,change_in_tp=handle_barrier(coin,exchange,client,df_1m,trade,entry_2,openorders,change_in_tp,quantity,tp_order_id,notifier)
         
         
