@@ -57,9 +57,12 @@ def close_position(client,coin,signal):
 
 while True:
     super_df=fetch_data(exchange,coin,timeframe,period,atr_trend)
-    entry=super_df.iloc[-1]['close']
-    quantity=round(stake/entry)
+    print(super_df.iloc[-1]['in_uptrend'])
+    
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+        entry=super_df.iloc[-1]['close']
+        quantity=round(stake/entry)
+        
         print(super_df.iloc[-1]['in_uptrend'])
         trade=1
         try:
@@ -78,9 +81,9 @@ while True:
             signal=curr_trade
         time.sleep(59)
     elif trade==1:
-        if curr_trade=='Buy' and super_df.iloc[-2]['in_uptrend']=='False' and super_df['color']==-1:
+        if curr_trade=='Buy' and super_df.iloc[-2]['in_uptrend']=='False' and super_df['color'][-1]==-1:
             close_position(client,coin,curr_trade)
             trade=0
-        elif curr_trade=='Sell' and super_df.iloc[-2]['in_uptrend']=='True' and super_df['color']==1:
+        elif curr_trade=='Sell' and super_df.iloc[-2]['in_uptrend']=='True' and super_df['color'][-1]==1:
             close_position(client,coin,curr_trade)
             trade=0
