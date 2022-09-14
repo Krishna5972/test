@@ -57,19 +57,15 @@ def close_position(client,coin,signal):
 
 while True:
     super_df=fetch_data(exchange,coin,timeframe,period,atr_trend)
-    print(super_df.iloc[-1]['in_uptrend'])
-    
+    entry=super_df.iloc[-1]['close']
+    quantity=round(stake/entry)
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
-        entry=super_df.iloc[-1]['close']
-        quantity=round(stake/entry)
-        
         print(super_df.iloc[-1]['in_uptrend'])
         trade=1
-        try:
-            close_position(client,coin,signal)
-        except Exception as e:
-            msg=f'Tried to close but no positions are open : {e}'
-            notifier(msg)
+        if signal =='Buy':
+            client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+        elif signal =='Sell':
+            client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')     
 
         if str(super_df.iloc[-1]['in_uptrend']) == 'False':
             client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
@@ -81,9 +77,9 @@ while True:
             signal=curr_trade
         time.sleep(59)
     elif trade==1:
-        if curr_trade=='Buy' and super_df.iloc[-2]['in_uptrend']=='False' and super_df['color'][-1]==-1:
+        if curr_trade=='Buy' and super_df.iloc[-2]['in_uptrend']=='False' and super_df['color']==-1:
             close_position(client,coin,curr_trade)
             trade=0
-        elif curr_trade=='Sell' and super_df.iloc[-2]['in_uptrend']=='True' and super_df['color'][-1]==1:
+        elif curr_trade=='Sell' and super_df.iloc[-2]['in_uptrend']=='True' and super_df['color']==1:
             close_position(client,coin,curr_trade)
             trade=0
