@@ -51,7 +51,7 @@ while(True):
         entry=super_df.iloc[-1]['close']
         quantity=round(stake/entry,3)
 
-        ma_pos=super_df.iloc[-1][ma_condition]
+        ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
         
         signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell']
         
