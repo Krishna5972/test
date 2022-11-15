@@ -47,15 +47,17 @@ while(True):
     super_df=supertrend(coin,df, period, atr1,pivot_period)
     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
-        notifier('Trend Changed')
+        
         entry=super_df.iloc[-1]['close']
         quantity=round(stake/entry,3)
 
+        ma_pos=super_df.iloc[-1][ma_condition]
         
         signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell']
         
-
-        if signal == 'Buy' and super_df.iloc[-1][ma_condition] == 1:
+        notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
+        
+        if signal == 'Buy' and ma_pos == 1:
             
             try:
                 close_position(client,coin,signal) #close open position if any
@@ -65,7 +67,8 @@ while(True):
             #buy order
             client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
             notifier(f'Bought @{entry}')
-        if signal == 'Sell' and super_df.iloc[-1][ma_condition] == -1:
+            
+        if signal == 'Sell' and ma_pos == -1:
             
             try:
                 close_position(client,coin,signal)
