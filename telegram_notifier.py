@@ -53,7 +53,8 @@ while(True):
 
         ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
         
-        signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell']
+        signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
+        
         
         notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
         
