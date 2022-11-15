@@ -63,7 +63,8 @@ while(True):
             try:
                 close_position(client,coin,signal) #close open position if any
             except Exception as e:
-                pass
+                notifier(f'e')
+                
                 
             #buy order
             client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
@@ -74,7 +75,7 @@ while(True):
             try:
                 close_position(client,coin,signal)
             except Exception as e:
-                pass
+                notifier(f'e')
             #sell order
             client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
             notifier(f'Sold @{entry}')
