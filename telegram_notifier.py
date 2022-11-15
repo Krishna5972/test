@@ -35,8 +35,7 @@ client=Client(config.api_key,config.secret_key)
 
 client.futures_change_leverage(symbol=f'{coin}USDT', leverage=2)
 
-acc_balance = round(float(client.futures_account()['totalWalletBalance']),2)
-stake=(acc_balance*0.70)*2
+
 
 
 while(True):
@@ -47,6 +46,8 @@ while(True):
     super_df=supertrend(coin,df, period, atr1,pivot_period)
     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+        acc_balance = round(float(client.futures_account()['totalWalletBalance']),2)
+        stake=(acc_balance*0.70)*2
         
         entry=super_df.iloc[-1]['close']
         quantity=round(stake/entry,3)
