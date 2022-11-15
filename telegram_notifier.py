@@ -61,9 +61,10 @@ while(True):
         if signal == 'Buy' and ma_pos == 1:
             
             try:
-                close_position(client,coin,signal) #close open position if any
+                close_position(client,coin,'Sell') #close open position if any
             except Exception as e:
-                notifier(f'e')
+                notifier(e)
+                
                 
                 
             #buy order
@@ -73,9 +74,10 @@ while(True):
         if signal == 'Sell' and ma_pos == -1:
             
             try:
-                close_position(client,coin,signal)
+                close_position(client,coin,'Buy')
             except Exception as e:
-                notifier(f'e')
+                notifier(e)
+                
             #sell order
             client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
             notifier(f'Sold @{entry}')
