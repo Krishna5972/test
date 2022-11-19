@@ -174,13 +174,14 @@ def notifier(message):
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time):
     while(True):
-        print(f'scanning {timeframe} in usdt')
         bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
         df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
         df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
         super_df=supertrend(coin,df, period, atr1,pivot_period)
         super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
         if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+            print(f'''scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}
+             and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time} seconds ''')
             acc_balance = round(float(client.futures_account()['availableBalance']),2)
             stake=(acc_balance*0.10)*1
             
@@ -217,23 +218,23 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             
             time.sleep(sleep_time)
         else:
-            ma=super_df[ma_condition].iloc[-1]
-            close=super_df['close'].iloc[-1]
-            
-            print(f'scanning at {super_df.iloc[-1][f"OpenTime"]} trade not found {super_df.iloc[-1][f"{ma_condition}_pos"]} and signal is {super_df.iloc[-1]["in_uptrend"]}')
-            print('usdt sleeping for 30 seconds')
+            print(f'''scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}
+             and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ''')
+
             time.sleep(30)
             
             
 def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time):
     while(True):
-        print(f'scanning {timeframe} in busd')
+        
         bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
         df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
         df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
         super_df=supertrend(coin,df, period, atr1,pivot_period)
         super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
         if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+            print(f'''scanning busd {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}
+             and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time} seconds ''')
             acc_balance = round(float(client.futures_account()['availableBalance']),2)
             stake=(acc_balance*0.10)*1
             
@@ -269,10 +270,8 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 notifier(f'Sold @{entry}')
             
             time.sleep(sleep_time)
-        else:
-            ma=super_df[ma_condition].iloc[-1]
-            close=super_df['close'].iloc[-1]
+        else:       
+            print(f'''scanning busd {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}
+             and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ''')
             
-            print(f'scanning at {super_df.iloc[-1][f"OpenTime"]} trade not found {super_df.iloc[-1][f"{ma_condition}_pos"]} and signal is {super_df.iloc[-1]["in_uptrend"]}')
-            print('bsud sleeping for 1minute')
             time.sleep(30)
