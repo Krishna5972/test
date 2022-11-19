@@ -25,28 +25,39 @@ exchange = ccxt.binanceus({
     },
 })
 
+timeframes_dict={
+'5m':5,
+'15m':15,
+'30m':30,
+'1h':60,
+'2h':120
+}
+
+
 coin='ETH'
-timeframe_1='1m'
+timeframe_1='5m'  #dont forget to change sleep time accordingly
 period_1=7
 atr1_1=1
 pivot_period_1=1
 ma_condition_1='ema_100'
+time_1=timeframes_dict[timeframe_1]
 
 client=Client(config.api_key,config.secret_key)
 
 client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
 client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=1)
 
-timeframe_busd='3m'
+timeframe_busd='15m'  #dont forget to change sleep time accordingly
 period_busd=7
 atr1_busd=1
 pivot_period_busd=1
 ma_condition_busd='ema_100'
+time_2=timeframes_dict[timeframe_busd]
 
 
 
-p1=Process(target=condition_usdt,args=[timeframe_1,pivot_period_1,atr1_1,period_1,ma_condition_1,exchange,client,coin])
-p2=Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin])    
+p1=Process(target=condition_usdt,args=[timeframe_1,pivot_period_1,atr1_1,period_1,ma_condition_1,exchange,client,coin,time_1])
+p2=Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_2])    
     
 
 if __name__=='__main__':

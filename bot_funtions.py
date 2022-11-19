@@ -172,7 +172,7 @@ def notifier(message):
     else:
         notifier(message)
         
-def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin):
+def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,time):
     while(True):
         print(f'scanning {timeframe} in usdt')
         bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
@@ -215,7 +215,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
                 notifier(f'Sold @{entry}')
             
-            time.sleep(60)
+            time.sleep(time)
         else:
             ma=super_df[ma_condition].iloc[-1]
             close=super_df['close'].iloc[-1]
@@ -225,7 +225,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             time.sleep(30)
             
             
-def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin):
+def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,time):
     while(True):
         print(f'scanning {timeframe} in busd')
         bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
@@ -268,11 +268,11 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
                 notifier(f'Sold @{entry}')
             
-            time.sleep(300)
+            time.sleep(time)
         else:
             ma=super_df[ma_condition].iloc[-1]
             close=super_df['close'].iloc[-1]
             
             print(f'scanning at {super_df.iloc[-1][f"OpenTime"]} trade not found {super_df.iloc[-1][f"{ma_condition}_pos"]} and signal is {super_df.iloc[-1]["in_uptrend"]}')
             print('bsud sleeping for 1minute')
-            time.sleep(60)
+            time.sleep(30)
