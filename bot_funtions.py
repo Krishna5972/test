@@ -1,13 +1,10 @@
 from datetime import datetime,timedelta
-from time import sleep
-from numba import njit
 import numpy as np
 import pandas as pd
-import shutil
-import os
 import talib
 import math
 import requests
+import time
 
 def supertrend(coin,df, period, atr_multiplier,pivot_period):
     pivot_period=pivot_period
@@ -157,6 +154,12 @@ def close_position(client,coin,signal):
     else:
         client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=1000,dualSidePosition=True,positionSide='SHORT')
         
+def close_position_busd(client,coin,signal):
+    if signal == 'Buy':
+        client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=1000,dualSidePosition=True,positionSide='LONG')
+    else:
+        client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=1000,dualSidePosition=True,positionSide='SHORT')
+        
         
 telegram_auth_token='5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo'
 telegram_group_id='notifier2_scanner_bot_link'        
@@ -168,3 +171,108 @@ def notifier(message):
         pass
     else:
         notifier(message)
+        
+def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin):
+    while(True):
+        print(f'scanning {timeframe} in usdt')
+        bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
+        df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
+        df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
+        super_df=supertrend(coin,df, period, atr1,pivot_period)
+        super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
+        if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+            acc_balance = round(float(client.futures_account()['availableBalance']),2)
+            stake=(acc_balance*0.10)*1
+            
+            entry=super_df.iloc[-1]['close']
+            quantity=round(stake/entry,3)
+
+            ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
+            
+            signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
+            
+            try:
+                    close_position(client,coin,'Sell') #close open position if any
+            except Exception as err:
+                try:
+                    close_position(client,coin,'Buy')
+                except Exception as e:
+                    notifier(e)
+                    
+                notifier(err)
+            
+            
+            notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
+            
+            if signal == 'Buy' and ma_pos == 1:
+                #buy order
+                client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+                notifier(f'Bought @{entry}')
+                
+            if signal == 'Sell' and ma_pos == -1:
+                    
+                #sell order
+                client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
+                notifier(f'Sold @{entry}')
+            
+            time.sleep(60)
+        else:
+            ma=super_df[ma_condition].iloc[-1]
+            close=super_df['close'].iloc[-1]
+            
+            print(f'scanning at {super_df.iloc[-1][f"OpenTime"]} trade not found {super_df.iloc[-1][f"{ma_condition}_pos"]} and signal is {super_df.iloc[-1]["in_uptrend"]}')
+            print('usdt sleeping for 30 seconds')
+            time.sleep(30)
+            
+            
+def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin):
+    while(True):
+        print(f'scanning {timeframe} in busd')
+        bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
+        df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
+        df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
+        super_df=supertrend(coin,df, period, atr1,pivot_period)
+        super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
+        if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
+            acc_balance = round(float(client.futures_account()['availableBalance']),2)
+            stake=(acc_balance*0.10)*1
+            
+            entry=super_df.iloc[-1]['close']
+            quantity=round(stake/entry,3)
+
+            ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
+            
+            signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
+            
+            
+            notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
+            
+                           
+            try:
+                close_position_busd(client,coin,'Sell') #close open position if any
+            except Exception as err:
+                try:
+                    close_position_busd(client,coin,'Buy')
+                except Exception as e:
+                    notifier(e)
+                notifier(err)
+            
+            if signal == 'Buy' and ma_pos == 1:
+                #buy order
+                client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+                notifier(f'Bought @{entry}')
+                
+            if signal == 'Sell' and ma_pos == -1:
+                    
+                #sell order
+                client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
+                notifier(f'Sold @{entry}')
+            
+            time.sleep(300)
+        else:
+            ma=super_df[ma_condition].iloc[-1]
+            close=super_df['close'].iloc[-1]
+            
+            print(f'scanning at {super_df.iloc[-1][f"OpenTime"]} trade not found {super_df.iloc[-1][f"{ma_condition}_pos"]} and signal is {super_df.iloc[-1]["in_uptrend"]}')
+            print('bsud sleeping for 1minute')
+            time.sleep(60)
