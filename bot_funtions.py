@@ -180,8 +180,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
         super_df=supertrend(coin,df, period, atr1,pivot_period)
         super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
         if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
-            print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and \
-                 uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time} seconds')
+            print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time} seconds')
             acc_balance = round(float(client.futures_account()['availableBalance']),2)
             stake=(acc_balance*0.10)*1
             
@@ -218,8 +217,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             
             time.sleep(sleep_time)
         else:
-            print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} \
-                 and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ')
+            print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ')
 
             time.sleep(30)
             
@@ -233,8 +231,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
         super_df=supertrend(coin,df, period, atr1,pivot_period)
         super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
         if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
-            print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} \
-                 and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time} seconds ')
+            print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time} seconds ')
             acc_balance = round(float(client.futures_account()['availableBalance']),2)
             stake=(acc_balance*0.10)*1
             
@@ -271,7 +268,6 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             
             time.sleep(sleep_time)
         else:       
-            print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and \
-                uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ')
+            print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ')
             
             time.sleep(30)
