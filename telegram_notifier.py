@@ -47,13 +47,18 @@ time_1=timeframes_dict[timeframe_1]
 client=Client(config.api_key,config.secret_key)
 
 client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
+notifier('Leverage changed')
 client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=1)
 
-timeframe_busd='1d'  #dont forget to change sleep time accordingly
-period_busd=56
-atr1_busd=3
-pivot_period_busd=3
-ma_condition_busd='ema_200'
+
+
+
+
+timeframe_busd='1h'  #dont forget to change sleep time accordingly
+period_busd=7
+atr1_busd=1
+pivot_period_busd=1
+ma_condition_busd='ma_200'
 time_2=timeframes_dict[timeframe_busd]
 
 
