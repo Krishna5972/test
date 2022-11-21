@@ -37,9 +37,9 @@ timeframes_dict={
 
 
 coin='ETH'
-timeframe_1='15m'  #dont forget to change sleep time accordingly
-period_1=56
-atr1_1=3
+timeframe_1='15m' 
+period_1=12
+atr1_1=3.5
 pivot_period_1=3
 ma_condition_1='ema_200'
 time_1=timeframes_dict[timeframe_1]
@@ -54,11 +54,11 @@ client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=1)
 
 
 
-timeframe_busd='1h'  #dont forget to change sleep time accordingly
+timeframe_busd='1h'  
 period_busd=7
 atr1_busd=1
 pivot_period_busd=1
-ma_condition_busd='ma_200'
+ma_condition_busd='ma_40'
 time_2=timeframes_dict[timeframe_busd]
 
 
