@@ -207,13 +207,13 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             if signal == 'Buy' and ma_pos == 1:
                 #buy order
                 client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
-                notifier(f'Bought @{entry}')
+                notifier(f'Bought @{entry}, Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                 
             if signal == 'Sell' and ma_pos == -1:
                     
                 #sell order
                 client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
-                notifier(f'Sold @{entry}')
+                notifier(f'Sold @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
             
             time.sleep(sleep_time*60)
         else:
@@ -258,13 +258,13 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             if signal == 'Buy' and ma_pos == 1:
                 #buy order
                 client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
-                notifier(f'Bought @{entry}')
+                notifier(f'Bought BUSD @{entry} , Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                 
             if signal == 'Sell' and ma_pos == -1:
                     
                 #sell order
                 client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
-                notifier(f'Sold @{entry}')
+                notifier(f'Sold BUSD @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
             
             time.sleep(sleep_time*60)
         else:       
