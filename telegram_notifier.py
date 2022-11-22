@@ -46,9 +46,9 @@ time_1=timeframes_dict[timeframe_1]
 
 client=Client(config.api_key,config.secret_key)
 
-client.futures_change_leverage(symbol=f'{coin}USDT', leverage=1)
-notifier('Leverage changed')
-client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=1)
+client.futures_change_leverage(symbol=f'{coin}USDT', leverage=10)
+notifier('Heroku Dyno Cycle')
+client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=10)
 
 
 
