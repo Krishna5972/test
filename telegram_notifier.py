@@ -9,7 +9,6 @@ import pandas as pd
 from bot_funtions import *
 import warnings
 warnings.filterwarnings('ignore')
-import pickle
 from multiprocessing import Process
 
 telegram_auth_token='5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo'
@@ -54,11 +53,11 @@ client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=10)
 
 
 
-timeframe_busd='1h'  
-period_busd=7
+timeframe_busd='15m'  
+period_busd=42
 atr1_busd=1
-pivot_period_busd=1
-ma_condition_busd='ma_40'
+pivot_period_busd=4
+ma_condition_busd='ema_100'
 time_2=timeframes_dict[timeframe_busd]
 
 
