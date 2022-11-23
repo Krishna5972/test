@@ -165,6 +165,7 @@ telegram_auth_token='5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo'
 telegram_group_id='notifier2_scanner_bot_link'        
         
 def notifier(message):
+    return 0
     telegram_api_url=f'https://api.telegram.org/bot{telegram_auth_token}/sendMessage?chat_id=@{telegram_group_id}&text={message}'
     tel_resp=requests.get(telegram_api_url)
     if tel_resp.status_code==200:

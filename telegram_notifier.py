@@ -49,7 +49,7 @@ client.futures_change_leverage(symbol=f'{coin}USDT', leverage=10)
 notifier('Heroku Dyno Cycle')
 client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=10)
 
-
+print('new')
 
 
 
