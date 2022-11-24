@@ -35,6 +35,7 @@ timeframes_dict={
 '1d':1440
 }
 
+print('Started running')
 
 coin='ETH'
 timeframe_1='30m' 
