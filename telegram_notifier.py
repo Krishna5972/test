@@ -9,7 +9,7 @@ import pandas as pd
 from bot_funtions import *
 import warnings
 warnings.filterwarnings('ignore')
-from multiprocessing import Process
+import multiprocessing
 
 telegram_auth_token='5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo'
 telegram_group_id='notifier2_scanner_bot_link'
@@ -26,6 +26,7 @@ exchange = ccxt.binanceus({
 
 timeframes_dict={
 '1m':1,
+'3m':3,
 '5m':5,
 '15m':15,
 '30m':30,
@@ -47,25 +48,29 @@ time_usdt=timeframes_dict[timeframe_usdt]
 
 client=Client(config.api_key,config.secret_key)
 
-client.futures_change_leverage(symbol=f'{coin}USDT', leverage=10)
+client.futures_change_leverage(symbol=f'{coin}USDT', leverage=8)
 notifier('Heroku Dyno Cycle')
-client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=10)
+client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
 
 
-timeframe_busd='15m'  
-period_busd=28
+timeframe_busd='3m'  
+period_busd=5
 atr1_busd=1
-pivot_period_busd=5
-ma_condition_busd='ema_200'
+pivot_period_busd=1
+ma_condition_busd='ema_5'
 time_busd=timeframes_dict[timeframe_busd]
 
 
+in_trade_usdt=multiprocessing.Value('i',0)
+in_trade_busd=multiprocessing.Value('i',0)
+lock=multiprocessing.Lock()
 
-p1=Process(target=condition_usdt,args=[timeframe_usdt,pivot_period_usdt,atr1_usdt,period_usdt,ma_condition_usdt,exchange,client,coin,time_usdt])
-p2=Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_busd])    
+p1=multiprocessing.Process(target=condition_usdt,args=[timeframe_usdt,pivot_period_usdt,atr1_usdt,period_usdt,ma_condition_usdt,exchange,client,coin,time_usdt,in_trade_usdt,in_trade_busd,lock])
+p2=multiprocessing.Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_busd,in_trade_usdt,in_trade_busd,lock])    
     
 
 if __name__=='__main__':
     p1.start()
     p2.start()
+
             
