@@ -98,8 +98,8 @@ def supertrend(coin,df, period, atr_multiplier,pivot_period):
                 
     Tup.pop(0)
     Tdown.pop(0)
-    df['up']=Tup
-    df['down']=Tdown
+    df['lower_band']=Tup
+    df['upper_band']=Tdown
     return df
 
 
@@ -164,18 +164,25 @@ def close_position_busd(client,coin,signal):
 telegram_auth_token='5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo'
 telegram_group_id='notifier2_scanner_bot_link'        
         
-def notifier(message):
+def notifier(message,tries=0):
     return 0
     telegram_api_url=f'https://api.telegram.org/bot{telegram_auth_token}/sendMessage?chat_id=@{telegram_group_id}&text={message}'
+    #https://api.telegram.org/bot5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo/sendMessage?chat_id=@notifier2_scanner_bot_link&text=hii
     tel_resp=requests.get(telegram_api_url)
     if tel_resp.status_code==200:
         pass
     else:
-        notifier(message)
+        while(tries < 25):
+            print(f'Telegram notifier problem retrying {tries}')
+            tries+=1
+            time.sleep(0.5)
+            notifier(message,tries)
+            
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time):
     try:
         while(True):
+            risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
@@ -183,16 +190,30 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
             ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
             if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
-                print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time*60} seconds')
+                print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time*60} seconds')
                 acc_balance = round(float(client.futures_account()['availableBalance']),2)
-                stake=(acc_balance*0.10)*1
+                stake=(acc_balance*0.5)
                 
+                signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 entry=super_df.iloc[-1]['close']
+                
+                if signal == 'Buy':
+                    sl=super_df.iloc[-1]['lower_band']
+                    sl_perc=(entry-sl)/entry
+                else:
+                    sl=super_df.iloc[-1]['upper_band']
+                    sl_perc=(sl-entry)/entry
+                    
+                print(f'initial stake:{stake}')
+                stake=(stake*risk)/sl_perc
                 quantity=round(stake/entry,3)
 
                 
+                print(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
+                notifier(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
                 
-                signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
+                
+                
                 
                 try:
                     close_position(client,coin,'Sell') #close open position if any
@@ -224,13 +245,14 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
 
                 time.sleep(30)
     except Exception as e:
+        print(f'USDT function closed with error : {e}')
         notifier(f'USDT function closed with error : {e}')
             
             
 def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time):
     try:
         while(True):
-            
+            risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
@@ -240,12 +262,26 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
                 print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for {sleep_time*60} seconds ')
                 acc_balance = round(float(client.futures_account()['availableBalance']),2)
-                stake=(acc_balance*0.10)*1
+                stake=(acc_balance*0.5)
                 
+                signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 entry=super_df.iloc[-1]['close']
+                
+                if signal == 'Buy':
+                    sl=super_df.iloc[-1]['lower_band']
+                    sl_perc=(entry-sl)/entry
+                else:
+                    sl=super_df.iloc[-1]['upper_band']
+                    sl_perc=(sl-entry)/entry
+                    
+                print(f'initial stake:{stake}')
+                stake=(stake*risk)/sl_perc
                 quantity=round(stake/entry,3)
 
                 
+                print(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
+
+                notifier(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
                 
                 signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 

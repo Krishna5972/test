@@ -25,6 +25,7 @@ exchange = ccxt.binanceus({
 })
 
 timeframes_dict={
+'1m':1,
 '5m':5,
 '15m':15,
 '30m':30,
@@ -36,11 +37,11 @@ timeframes_dict={
 
 
 coin='ETH'
-timeframe_1='15m' 
-period_1=12
-atr1_1=3.5
-pivot_period_1=3
-ma_condition_1='ema_200'
+timeframe_1='30m' 
+period_1=7
+atr1_1=1
+pivot_period_1=5
+ma_condition_1='ema_100'
 time_1=timeframes_dict[timeframe_1]
 
 client=Client(config.api_key,config.secret_key)
@@ -49,15 +50,12 @@ client.futures_change_leverage(symbol=f'{coin}USDT', leverage=10)
 notifier('Heroku Dyno Cycle')
 client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=10)
 
-print('new')
-
-
 
 timeframe_busd='15m'  
-period_busd=42
+period_busd=28
 atr1_busd=1
-pivot_period_busd=4
-ma_condition_busd='ema_100'
+pivot_period_busd=5
+ma_condition_busd='ema_200'
 time_2=timeframes_dict[timeframe_busd]
 
 
