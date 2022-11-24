@@ -183,7 +183,7 @@ def notifier(message,tries=0):
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
     try:
         while(True):
-            risk=0.001
+            
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
@@ -208,9 +208,12 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value},sleeping for {sleep_time*60} seconds')
                 acc_balance = round(float(client.futures_account()['availableBalance']),2)
                 if in_trade_busd.value == 0:
+                    risk=0.02
                     stake=(acc_balance*0.5)
                 else:
+                    risk=0.015
                     stake=acc_balance
+                    
                
 
                 
@@ -329,8 +332,10 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
                 
                 if in_trade_usdt.value==0:
+                    risk=0.02
                     stake=(acc_balance*0.5)
                 else:
+                    risk=0.015
                     stake=acc_balance
 
                 
