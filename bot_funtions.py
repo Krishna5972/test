@@ -183,7 +183,7 @@ def notifier(message,tries=0):
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time):
     try:
         while(True):
-            risk=0.02
+            risk=0.001
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
@@ -226,20 +226,51 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                         
                     notifier(err)
                 
-                
+                rr=3
                 notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                 
                 if signal == 'Buy' and ma_pos == 1:
                     #buy order
                     client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
                     notifier(f'Bought @{entry}, Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
+                    take_profit=entry+((entry-sl)*rr)
+                    client.futures_create_order(
+                            symbol=f'{coin}USDT',
+                            price=round(take_profit,2),
+                            side='SELL',
+                            positionSide='LONG',
+                            quantity=quantity,
+                            timeInForce='GTC',
+                            type='LIMIT',
+                            # reduceOnly=True,
+                            closePosition=False,
+                            # stopPrice=round(take_profit,2),
+                            workingType='MARK_PRICE',
+                            priceProtect=True  
+                            )
                     
                 if signal == 'Sell' and ma_pos == -1:
                         
                     #sell order
                     client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
                     notifier(f'Sold @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
-                
+                    take_profit=entry-((sl-entry)*rr)
+                    client.futures_create_order(
+                                            symbol=f'{coin}USDT',
+                                            price=round(take_profit,2),
+                                            side='BUY',
+                                            positionSide='SHORT',
+                                            quantity=quantity,
+                                            timeInForce='GTC',
+                                            type='LIMIT',
+                                            # reduceOnly=True,
+                                            closePosition=False,
+                                            # stopPrice=round(take_profit,2),
+                                            workingType='MARK_PRICE',
+                                            priceProtect=True  
+                                            )
+                    
+                    
                 time.sleep(sleep_time*60)
             else:
                 print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},sleeping for 30 seconds ')
@@ -253,7 +284,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
 def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time):
     try:
         while(True):
-            risk=0.02
+            risk=0.001
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)

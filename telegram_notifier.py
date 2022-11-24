@@ -38,12 +38,12 @@ timeframes_dict={
 print('Started running')
 
 coin='ETH'
-timeframe_1='30m' 
-period_1=7
-atr1_1=1
-pivot_period_1=5
-ma_condition_1='ema_100'
-time_1=timeframes_dict[timeframe_1]
+timeframe_usdt='1m' 
+period_usdt=5
+atr1_usdt=1
+pivot_period_usdt=1
+ma_condition_usdt='ema_5'
+time_usdt=timeframes_dict[timeframe_usdt]
 
 client=Client(config.api_key,config.secret_key)
 
@@ -57,12 +57,12 @@ period_busd=28
 atr1_busd=1
 pivot_period_busd=5
 ma_condition_busd='ema_200'
-time_2=timeframes_dict[timeframe_busd]
+time_busd=timeframes_dict[timeframe_busd]
 
 
 
-p1=Process(target=condition_usdt,args=[timeframe_1,pivot_period_1,atr1_1,period_1,ma_condition_1,exchange,client,coin,time_1])
-p2=Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_2])    
+p1=Process(target=condition_usdt,args=[timeframe_usdt,pivot_period_usdt,atr1_usdt,period_usdt,ma_condition_usdt,exchange,client,coin,time_usdt])
+p2=Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_busd])    
     
 
 if __name__=='__main__':
