@@ -16,7 +16,7 @@ telegram_group_id='notifier2_scanner_bot_link'
 
 
         
-exchange = ccxt.binanceus({
+exchange = ccxt.binance({
     "apiKey": config.api_key,
     "secret": config.secret_key,
     'options': {
@@ -64,9 +64,10 @@ in_trade_usdt=multiprocessing.Value('i',0)
 in_trade_busd=multiprocessing.Value('i',0)
 lock=multiprocessing.Lock()
 
+
 p1=multiprocessing.Process(target=condition_usdt,args=[timeframe_usdt,pivot_period_usdt,atr1_usdt,period_usdt,ma_condition_usdt,exchange,client,coin,time_usdt,in_trade_usdt,in_trade_busd,lock])
 p2=multiprocessing.Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_busd,in_trade_usdt,in_trade_busd,lock])    
-    
+            
 
 if __name__=='__main__':
     p1.start()

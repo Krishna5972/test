@@ -179,10 +179,11 @@ def notifier(message,tries=0):
             
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
-    try:
-        while(True):
+    notifier(f'Starting USDT function,SARAVANA BhAVA')
+    while(True):
+        try:
             risk=0.02
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)                        
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -210,7 +211,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 else:
                     stake=acc_balance
                     
-               
+                
 
                 
                 signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
@@ -285,17 +286,19 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     lock.acquire()
                     in_trade_usdt.value=0
                     lock.release()
-
-
                 time.sleep(2)
-    except Exception as e:
-        print(f'USDT function closed with error : {e}')
-        notifier(f'USDT function closed with error : {e}')
+        except Exception as err:
+            notifier(err)
+            notifier(f'Restarting USDT function in 50 seconds')
+            time.sleep(50)
+
+
             
             
 def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
-    try:
-        while(True):
+    notifier(f'Starting BUSD function,SARAVANA BhAVA')
+    while(True):
+        try:
             risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
@@ -353,9 +356,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 print(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
 
                 notifier(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
-                
-                signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
-                
+                                
                 
                 notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                 
@@ -378,6 +379,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 print(f'Scanning BUSD {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
                 
                 time.sleep(2)
-    except Exception as e:
-        notifier(f'BUSDT function closed with error : {e}')
-        print(f'BUSDT function closed with error : {e}')
+        except Exception as e:
+            notifier(e)
+            notifier(f'Restarting BUSD function in 50 seconds')
+            time.sleep(50)
