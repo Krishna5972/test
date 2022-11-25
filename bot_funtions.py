@@ -179,11 +179,11 @@ def notifier(message,tries=0):
             
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
-    notifier(f'Starting USDT function,SARAVANA BhAVA')
+    notifier(f'Starting USDT function,SARAVANA BHAVA')
     while(True):
         try:
             risk=0.02
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)                        
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)                        
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -281,11 +281,12 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 time.sleep(sleep_time*60)
             else:
                 print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
-                open_orders=client.futures_get_open_orders(symbol=f'{coin}USDT')
-                if len(open_orders)==0:
-                    lock.acquire()
-                    in_trade_usdt.value=0
-                    lock.release()
+                if in_trade_usdt.value==1:
+                    open_orders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+                    if len(open_orders)==0:
+                        lock.acquire()
+                        in_trade_usdt.value=0
+                        lock.release()
                 time.sleep(2)
         except Exception as err:
             notifier(err)
@@ -296,11 +297,11 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             
             
 def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
-    notifier(f'Starting BUSD function,SARAVANA BhAVA')
+    notifier(f'Starting BUSD function,SARAVANA BHAVA')
     while(True):
         try:
             risk=0.02
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
