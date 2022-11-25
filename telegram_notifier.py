@@ -36,14 +36,13 @@ timeframes_dict={
 '1d':1440
 }
 
-print('Started running')
 
 coin='ETH'
-timeframe_usdt='1m' 
+timeframe_usdt='30m' 
 period_usdt=5
 atr1_usdt=1
-pivot_period_usdt=1
-ma_condition_usdt='ema_5'
+pivot_period_usdt=5
+ma_condition_usdt='ema_100'
 time_usdt=timeframes_dict[timeframe_usdt]
 
 client=Client(config.api_key,config.secret_key)
@@ -53,11 +52,11 @@ notifier('Heroku Dyno Cycle')
 client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
 
 
-timeframe_busd='3m'  
-period_busd=5
+timeframe_busd='15m'  
+period_busd=28
 atr1_busd=1
-pivot_period_busd=1
-ma_condition_busd='ema_5'
+pivot_period_busd=5
+ma_condition_busd='ema_200'
 time_busd=timeframes_dict[timeframe_busd]
 
 

@@ -165,8 +165,6 @@ telegram_auth_token='5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo'
 telegram_group_id='notifier2_scanner_bot_link'        
         
 def notifier(message,tries=0):
-    print('maintainance')
-    return 0
     telegram_api_url=f'https://api.telegram.org/bot{telegram_auth_token}/sendMessage?chat_id=@{telegram_group_id}&text={message}'
     #https://api.telegram.org/bot5515290544:AAG9T15VaY6BIxX2VYX8x2qr34aC-zVEYMo/sendMessage?chat_id=@notifier2_scanner_bot_link&text=hii
     tel_resp=requests.get(telegram_api_url)
@@ -183,8 +181,8 @@ def notifier(message,tries=0):
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
     try:
         while(True):
-            
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
+            risk=0.02
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -208,10 +206,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value},sleeping for {sleep_time*60} seconds')
                 acc_balance = round(float(client.futures_account()['availableBalance']),2)
                 if in_trade_busd.value == 0:
-                    risk=0.02
-                    stake=(acc_balance*0.5)
+                    stake=(acc_balance*0.68)
                 else:
-                    risk=0.015
                     stake=acc_balance
                     
                
@@ -291,7 +287,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     lock.release()
 
 
-                time.sleep(30)
+                time.sleep(2)
     except Exception as e:
         print(f'USDT function closed with error : {e}')
         notifier(f'USDT function closed with error : {e}')
@@ -300,8 +296,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
 def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
     try:
         while(True):
-            risk=0.001
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
+            risk=0.02
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=99)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -332,10 +328,8 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
                 
                 if in_trade_usdt.value==0:
-                    risk=0.02
-                    stake=(acc_balance*0.5)
+                    stake=(acc_balance*0.68)
                 else:
-                    risk=0.015
                     stake=acc_balance
 
                 
@@ -383,6 +377,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             else:       
                 print(f'Scanning BUSD {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
                 
-                time.sleep(30)
+                time.sleep(2)
     except Exception as e:
         notifier(f'BUSDT function closed with error : {e}')
+        print(f'BUSDT function closed with error : {e}')
