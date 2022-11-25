@@ -64,6 +64,27 @@ in_trade_usdt=multiprocessing.Value('i',0)
 in_trade_busd=multiprocessing.Value('i',0)
 lock=multiprocessing.Lock()
 
+pos=client.futures_position_information(type='FUTURES')
+if pos[336]['symbol'] == 'ETHUSDT' and pos[337]['symbol'] == 'ETHUSDT' and pos[338]['symbol'] == 'ETHUSDT':
+    if pos[336]['symbol'] == 'ETHUSDT' and float(pos[336]['positionAmt']) !=0:
+        in_trade_usdt.value=1
+ 
+    elif pos[337]['symbol'] == 'ETHUSDT' and float(pos[337]['positionAmt']) !=0:
+        in_trade_usdt.value=1
+    elif pos[338]['symbol'] == 'ETHUSDT' and float(pos[338]['positionAmt']) !=0:
+        in_trade_usdt.value=1
+        
+       
+if pos[474]['symbol'] == 'ETHBUSD' and pos[475]['symbol'] == 'ETHBUSD' and pos[476]['symbol'] == 'ETHBUSD':
+    if pos[474]['symbol'] == 'ETHBUSD' and float(pos[474]['positionAmt']) !=0:
+        in_trade_busd.value=1 
+    elif pos[475]['symbol'] == 'ETHBUSD' and float(pos[475]['positionAmt']) !=0:
+        in_trade_busd.value=1 
+    elif pos[476]['symbol'] == 'ETHBUSD' and float(pos[476]['positionAmt']) !=0:
+        in_trade_busd.value=1 
+
+
+
 
 p1=multiprocessing.Process(target=condition_usdt,args=[timeframe_usdt,pivot_period_usdt,atr1_usdt,period_usdt,ma_condition_usdt,exchange,client,coin,time_usdt,in_trade_usdt,in_trade_busd,lock])
 p2=multiprocessing.Process(target=condition_busdt,args=[timeframe_busd,pivot_period_busd,atr1_busd,period_busd,ma_condition_busd,exchange,client,coin,time_busd,in_trade_usdt,in_trade_busd,lock])    
