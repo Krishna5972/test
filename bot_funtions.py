@@ -195,14 +195,16 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 try:
                     close_position(client,coin,'Sell') #close open position if any
                     in_trade_usdt.value=in_trade_usdt.value-1
+                    notifier('Position Closed')
                 except Exception as err:
                     try:
                         close_position(client,coin,'Buy')
+                        notifier('Position Closed')
                         in_trade_usdt.value=in_trade_usdt.value-1
                     except Exception as e:
-                        notifier(e)
+                        notifier('No Open Position to Close')
                         
-                    notifier(err)
+                    print(err)
 
                 print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value},sleeping for {sleep_time*60} seconds')
                 acc_balance = round(float(client.futures_account()['availableBalance']),2)
@@ -229,8 +231,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 quantity=round(stake/entry,3)
 
                 
-                print(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
-                notifier(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
+                print(f'Risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
+                
                 
                 rr=3
                 notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
@@ -255,8 +257,9 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             priceProtect=True  
                             )
                     in_trade_usdt.value=1
+                    notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
                     
-                if signal == 'Sell' and ma_pos == -1:
+                elif signal == 'Sell' and ma_pos == -1:
                         
                     #sell order
                     client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
@@ -277,6 +280,9 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                                             priceProtect=True  
                                             )
                     in_trade_usdt.value=1
+                    notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
+                else:
+                    notifier(f'Not taking the trade')
                 lock.release()
                 time.sleep(sleep_time*60)
             else:
@@ -312,16 +318,17 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
                 try:
                     close_position_busd(client,coin,'Sell') #close open position if any
+                    notifier('Position Closed')
                     in_trade_busd.value=0
                 except Exception as err:
                     try:
                         close_position_busd(client,coin,'Buy')
+                        notifier('Position Closed')
                         in_trade_busd.value=0
-                    except Exception as e:
-                        
-                        notifier(e)
-                        
-                    notifier(err)
+                    except Exception as e: 
+                        notifier('No Position to close')
+                        print(err)
+                    
                 
                 
                 
@@ -356,9 +363,6 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
                 print(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
 
-                notifier(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
-                                
-                
                 notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                 
                 
@@ -367,15 +371,23 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
                     notifier(f'Bought BUSD @{entry} , Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                     in_trade_busd.value=1
+                    notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
                     
-                if signal == 'Sell' and ma_pos == -1:
+                elif signal == 'Sell' and ma_pos == -1:
                         
                     #sell order
                     client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
                     notifier(f'Sold BUSD @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                     in_trade_busd.value=1
+                    notifier(f'Risk adjusted stake:{round(stake,3)},entry:{entry},sl_perc: {round(sl_perc,3)}')
+                else:
+                    notifier(f'Not taking the trade')
+
                 lock.release()
+
                 time.sleep(sleep_time*60)
+
+                
             else:       
                 print(f'Scanning BUSD {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
                 
