@@ -45,11 +45,17 @@ pivot_period_usdt=5
 ma_condition_usdt='ema_100'
 time_usdt=timeframes_dict[timeframe_usdt]
 
-client=Client(config.api_key,config.secret_key)
+while(True):
+    try:
+        client=Client(config.api_key,config.secret_key)
 
-client.futures_change_leverage(symbol=f'{coin}USDT', leverage=8)
-notifier('Heroku Dyno Cycle')
-client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
+        client.futures_change_leverage(symbol=f'{coin}USDT', leverage=8)
+        notifier('Heroku Dyno Cycle')
+        client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
+        break
+    except Exception as e:
+        notifier('API error Between 12:00 UTC to 12:30 UTC sleeping for 5m and trying again,check charts to be safe')
+        time.sleep(300)
 
 
 timeframe_busd='15m'  
