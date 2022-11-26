@@ -180,6 +180,7 @@ def notifier(message,tries=0):
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
     notifier(f'Starting USDT function,SARAVANA BHAVA')
+    weight_reducer=1
     while(True):
         try:
             risk=0.02
@@ -258,6 +259,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             )
                     in_trade_usdt.value=1
                     notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
+                    weight_reducer=1
                     
                 elif signal == 'Sell' and ma_pos == -1:
                         
@@ -281,18 +283,21 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                                             )
                     in_trade_usdt.value=1
                     notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
+                    weight_reducer=1
                 else:
                     notifier(f'Not taking the trade')
                 lock.release()
                 time.sleep(sleep_time*60)
             else:
                 print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
-                if in_trade_usdt.value==1:
+                if in_trade_usdt.value==1 and weight_reducer>=15:
                     open_orders=client.futures_get_open_orders(symbol=f'{coin}USDT')
+                    weight_reducer=0
                     if len(open_orders)==0:
                         lock.acquire()
                         in_trade_usdt.value=0
                         lock.release()
+                weight_reducer+=1
                 time.sleep(2)
         except Exception as err:
             notifier(err)
