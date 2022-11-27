@@ -180,10 +180,10 @@ def notifier(message,tries=0):
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
     notifier(f'Starting USDT function,SARAVANA BHAVA')
-    weight_reducer=1
     while(True):
         try:
             risk=0.02
+            notifier(coin)
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)                        
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
@@ -212,10 +212,10 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 if in_trade_busd.value == 0:
                     stake=(acc_balance*0.68)
                 else:
-                    stake=acc_balance
+                    stake=acc_balance+(acc_balance*0.32)
                     
                 
-
+                notifier(f'Allocated stake:{stake}')
                 
                 signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 entry=super_df.iloc[-1]['close']
@@ -227,7 +227,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     sl=super_df.iloc[-1]['upper_band']
                     sl_perc=(sl-entry)/entry
                     
-                print(f'initial stake:{stake}')
+                notifier(f'Initial stake:{stake}')
                 stake=(stake*risk)/sl_perc
                 quantity=round(stake/entry,3)
 
@@ -259,7 +259,6 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             )
                     in_trade_usdt.value=1
                     notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
-                    weight_reducer=1
                     
                 elif signal == 'Sell' and ma_pos == -1:
                         
@@ -283,21 +282,18 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                                             )
                     in_trade_usdt.value=1
                     notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
-                    weight_reducer=1
                 else:
                     notifier(f'Not taking the trade')
                 lock.release()
                 time.sleep(sleep_time*60)
             else:
                 print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
-                if in_trade_usdt.value==1 and weight_reducer>=15:
-                    open_orders=client.futures_get_open_orders(symbol=f'{coin}USDT')
-                    weight_reducer=0
+                if in_trade_usdt.value==1:
+                    open_orders=client.dsa(symbol=f'{coin}USDT')
                     if len(open_orders)==0:
                         lock.acquire()
                         in_trade_usdt.value=0
                         lock.release()
-                weight_reducer+=1
                 time.sleep(2)
         except Exception as err:
             notifier(err)
@@ -346,10 +342,10 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 if in_trade_usdt.value==0:
                     stake=(acc_balance*0.68)
                 else:
-                    stake=acc_balance
+                    acc_balance+(acc_balance*0.32)
 
                 
-                
+                notifier(f'Allocated stake:{stake}')
                 
                 signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 entry=super_df.iloc[-1]['close']
