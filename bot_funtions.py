@@ -300,7 +300,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 
                 if indicator>1800:
                     indicator=0   #notification every one hour
-                    notifier(f'SHARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value}')
+                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value}')
                 weight_reduce+=1
                 indicator+=1
                 time.sleep(2)
