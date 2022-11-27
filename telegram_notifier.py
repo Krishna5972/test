@@ -103,6 +103,7 @@ p1=multiprocessing.Process(target=condition_usdt,args=[timeframe_usdt,
                                                     in_trade_usdt,
                                                     in_trade_busd,
                                                     lock])
+
 p2=multiprocessing.Process(target=condition_busdt,args=[timeframe_busd,
                                                         pivot_period_busd,
                                                         atr1_busd,
