@@ -351,7 +351,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 if in_trade_usdt.value==0:
                     stake=(acc_balance*0.68)
                 else:
-                    acc_balance+(acc_balance*0.32)
+                    stake=acc_balance+(acc_balance*0.32)
 
                 
                 notifier(f'Allocated stake:{stake}')

@@ -51,6 +51,7 @@ while(True):
 
         client.futures_change_leverage(symbol=f'{coin}USDT', leverage=8)
         client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
+        notifier(f'SARAVANA BHAVA')
         break
     except Exception as e:
         notifier(f'Met with exception {e}, sleeping for 5 minutes and trying again')
