@@ -50,7 +50,6 @@ while(True):
         client=Client(config.api_key,config.secret_key)
 
         client.futures_change_leverage(symbol=f'{coin}USDT', leverage=8)
-        notifier('Heroku Dyno Cycle')
         client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
         break
     except Exception as e:
