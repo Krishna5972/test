@@ -53,7 +53,7 @@ while(True):
         client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=8)
         break
     except Exception as e:
-        notifier('API error Between 12:00 UTC to 12:30 UTC sleeping for 5m and trying again,check charts to be safe')
+        notifier(f'Met with exception {e}, sleeping for 5 minutes and trying again')
         time.sleep(300)
 
 
