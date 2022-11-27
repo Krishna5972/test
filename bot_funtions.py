@@ -183,7 +183,6 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
     while(True):
         try:
             risk=0.02
-            notifier(coin)
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)                        
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
