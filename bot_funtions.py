@@ -289,7 +289,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             else:
                 print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
                 if in_trade_usdt.value==1:
-                    open_orders=client.dsa(symbol=f'{coin}USDT')
+                    open_orders=client.futures_get_open_orders(symbol=f'{coin}USDT')
                     if len(open_orders)==0:
                         lock.acquire()
                         in_trade_usdt.value=0
