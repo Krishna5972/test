@@ -196,13 +196,13 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 
                 try:
                     close_position(client,coin,'Sell') #close open position if any
-                    in_trade_usdt.value=in_trade_usdt.value-1
+                    in_trade_usdt.value=0
                     notifier('Position Closed')
                 except Exception as err:
                     try:
                         close_position(client,coin,'Buy')
                         notifier('Position Closed')
-                        in_trade_usdt.value=in_trade_usdt.value-1
+                        in_trade_usdt.value=0
                     except Exception as e:
                         notifier('No Open Position to Close')
                         
@@ -211,9 +211,9 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value},sleeping for {sleep_time*60} seconds')
                 acc_balance = round(float(client.futures_account()['availableBalance']),2)
                 if in_trade_busd.value == 0:
-                    stake=(acc_balance*0.68)
+                    stake=(acc_balance*0.88)
                 else:
-                    stake=acc_balance+(acc_balance*0.32)
+                    stake=acc_balance+(acc_balance*0.12)
                     
                 
                 notifier(f'Allocated stake:{stake}')
@@ -298,8 +298,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                         lock.release()
                 
                 
-                if indicator>1800:
-                    indicator=0   #notification every one hour
+                if indicator>900:
+                    indicator=0   #notification every 30 minutes
                     notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value}')
                 weight_reduce+=1
                 indicator+=1
@@ -349,9 +349,9 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
                 
                 if in_trade_usdt.value==0:
-                    stake=(acc_balance*0.68)
+                    stake=(acc_balance*0.88)
                 else:
-                    stake=acc_balance+(acc_balance*0.32)
+                    stake=acc_balance+(acc_balance*0.12)
 
                 
                 notifier(f'Allocated stake:{stake}')
