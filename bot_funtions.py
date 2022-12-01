@@ -221,7 +221,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     stake=acc_balance+(acc_balance*0.12)
                     
                 
-                notifier(f'Allocated stake:{stake}')
+                notifier(f'Allocated stake:{round(stake,2)}')
                 
                 signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 entry=super_df.iloc[-1]['close']
@@ -237,8 +237,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 stake=(stake*risk)/sl_perc
                 quantity=round(stake/entry,3)
 
-                
-                print(f'Risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
+            
                 
                 
                 rr=3
@@ -363,7 +362,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     stake=acc_balance+(acc_balance*0.12)
 
                 
-                notifier(f'Allocated stake:{stake}')
+                notifier(f'Allocated stake:{round(stake,2)}')
                 
                 signal = ['Buy' if super_df.iloc[-1]['in_uptrend'] == True else 'Sell'][0]
                 entry=super_df.iloc[-1]['close']
@@ -379,8 +378,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 stake=(stake*risk)/sl_perc
                 quantity=round(stake/entry,3)
 
-                
-                print(f'risk adjusted stake:{stake},entry:{entry},sl_perc: {sl_perc}')
+            
 
                 notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                 
