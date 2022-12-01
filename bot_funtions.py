@@ -302,11 +302,11 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                         lock.release()
                 
                 
-                if indicator>900:
+                if indicator>0:
                     indicator=0   #notification every 30 minutes
                     information=client.futures_account()
-                    totalUnrealizedProfit=round(information['totalUnrealizedProfit'],2)
-                    bal=round(information['totalWalletBalance'],2)
+                    totalUnrealizedProfit=round(float(information['totalUnrealizedProfit']),2)
+                    bal=round(float(information['totalWalletBalance']),2)
                     notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal},PNL:{totalUnrealizedProfit}')
                     
                 weight_reduce+=1
