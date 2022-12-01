@@ -5,6 +5,11 @@ import talib
 import math
 import requests
 import time
+import smtplib
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+from email.mime.text import MIMEText
 
 def supertrend(coin,df, period, atr_multiplier,pivot_period):
     pivot_period=pivot_period
@@ -300,7 +305,11 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 
                 if indicator>900:
                     indicator=0   #notification every 30 minutes
-                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value}')
+                    information=client.futures_account()
+                    totalUnrealizedProfit=round(information['totalUnrealizedProfit'],2)
+                    bal=round(information['totalWalletBalance'],2)
+                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal},PNL:{totalUnrealizedProfit}')
+                    
                 weight_reduce+=1
                 indicator+=1
                 time.sleep(2)
@@ -406,3 +415,33 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             notifier(e)
             notifier(f'Restarting BUSD function in 50 seconds')
             time.sleep(50)
+
+
+def send_mail(filename,subject='SARAVANA BHAVA'):
+    from_= 'gannamanenilakshmi1978@gmail.com'
+    to= 'vamsikrishnagannamaneni@gmail.com'
+    
+    message = MIMEMultipart()
+    message['From'] = from_
+    message['To'] = to
+    message['Subject'] =subject
+    body_email ='SARAVANA BHAVA !'
+    
+    message.attach(MIMEText(body_email, 'plain'))
+    
+    attachment = open(filename, 'rb')
+    
+    x = MIMEBase('application', 'octet-stream')
+    x.set_payload((attachment).read())
+    encoders.encode_base64(x)
+    
+    x.add_header('Content-Disposition', 'attachment; filename= %s' % filename)
+    message.attach(x)
+    
+    s_e = smtplib.SMTP('smtp.gmail.com', 587)
+    s_e.starttls()
+    
+    s_e.login(from_, 'upsprgwjgtxdbwki')
+    text = message.as_string()
+    s_e.sendmail(from_, to, text)
+    print(f'Sent {filename}')

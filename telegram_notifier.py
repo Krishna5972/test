@@ -70,26 +70,13 @@ in_trade_usdt=multiprocessing.Value('i',0)
 in_trade_busd=multiprocessing.Value('i',0)
 lock=multiprocessing.Lock()
 
-pos=client.futures_position_information(type='FUTURES')
-if pos[336]['symbol'] == 'ETHUSDT' and pos[337]['symbol'] == 'ETHUSDT' and pos[338]['symbol'] == 'ETHUSDT':
-    if pos[336]['symbol'] == 'ETHUSDT' and float(pos[336]['positionAmt']) !=0:
-        in_trade_usdt.value=1
- 
-    elif pos[337]['symbol'] == 'ETHUSDT' and float(pos[337]['positionAmt']) !=0:
-        in_trade_usdt.value=1
-    elif pos[338]['symbol'] == 'ETHUSDT' and float(pos[338]['positionAmt']) !=0:
-        in_trade_usdt.value=1
-        
-       
-if pos[474]['symbol'] == 'ETHBUSD' and pos[475]['symbol'] == 'ETHBUSD' and pos[476]['symbol'] == 'ETHBUSD':
-    if pos[474]['symbol'] == 'ETHBUSD' and float(pos[474]['positionAmt']) !=0:
-        in_trade_busd.value=1 
-    elif pos[475]['symbol'] == 'ETHBUSD' and float(pos[475]['positionAmt']) !=0:
-        in_trade_busd.value=1 
-    elif pos[476]['symbol'] == 'ETHBUSD' and float(pos[476]['positionAmt']) !=0:
-        in_trade_busd.value=1 
+pos=client.futures_position_information(symbol=f'{coin}USDT')
+if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[0]['positionAmt']) !=0:
+    in_trade_usdt.value=1
 
-
+pos=client.futures_position_information(symbol=f'{coin}BUSD')
+if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[0]['positionAmt']) !=0:
+    in_trade_busd.value=1
 
 
 p1=multiprocessing.Process(target=condition_usdt,args=[timeframe_usdt,
