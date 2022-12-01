@@ -302,7 +302,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                         lock.release()
                 
                 
-                if indicator>0:
+                if indicator>900:
                     indicator=0   #notification every 30 minutes
                     information=client.futures_account()
                     totalUnrealizedProfit=round(float(information['totalUnrealizedProfit']),2)
