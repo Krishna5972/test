@@ -321,9 +321,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
 
 
 
-                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal_pos},PNL:{profit_pos}')
-                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal},PNL:{totalUnrealizedProfit}')
-                    
+                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal_pos},PNL:{profit_pos}')                    
                 weight_reduce+=1
                 indicator+=1
                 time.sleep(2)
