@@ -314,12 +314,15 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
 
                     if totalUnrealizedProfit > 0:
                         profit_pos='Green'
+                    elif totalUnrealizedProfit == 0:
+                        profit_pos='Neutral'
                     else:
                         profit_pos='Red'
-                    
 
-                    
+
+
                     notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal_pos},PNL:{profit_pos}')
+                    notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal},PNL:{totalUnrealizedProfit}')
                     
                 weight_reduce+=1
                 indicator+=1
@@ -386,6 +389,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     sl=super_df.iloc[-1]['upper_band']
                     sl_perc=(sl-entry)/entry
                     
+                print(f'initial stake:{stake}')
                 stake=(stake*risk)/sl_perc
                 quantity=round(stake/entry,3)
 
