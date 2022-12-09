@@ -71,11 +71,11 @@ in_trade_busd=multiprocessing.Value('i',0)
 lock=multiprocessing.Lock()
 
 pos=client.futures_position_information(symbol=f'{coin}USDT')
-if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[0]['positionAmt']) !=0:
+if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[2]['positionAmt']) !=0:
     in_trade_usdt.value=1
 
 pos=client.futures_position_information(symbol=f'{coin}BUSD')
-if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[0]['positionAmt']) !=0:
+if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[2]['positionAmt']) !=0:
     in_trade_busd.value=1
 
 
