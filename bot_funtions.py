@@ -393,7 +393,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
 
             
 
-                notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
+                notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos},close : {entry} , ma: {super_df.iloc[-1]["ma_condition"]}')
                 
                 
                 if signal == 'Buy' and ma_pos == 1:
@@ -420,7 +420,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
             else:       
                 print(f'Scanning BUSD {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
-                
+                print(f'ma : {super_df.iloc[-1]["ma_condition"]},close :{super_df.iloc[-1]["close"]}')
                 time.sleep(2)
         except Exception as e:
             notifier(e)
