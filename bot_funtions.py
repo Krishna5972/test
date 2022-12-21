@@ -380,6 +380,8 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     df=pd.concat([df,temp_df]).reset_index(drop=True)
                     df=df[2:]
                     df = df.astype(float)
+                    print(df.dtypes)
+                    print(df['high'])
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
                     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
                     ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
