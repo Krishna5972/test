@@ -209,7 +209,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     candle=data['k']
                     candle_data=[candle['t'],candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
                     temp_df = pd.DataFrame([candle_data], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-                    temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in df['OpenTime']]
+                    temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
                     df=pd.concat([df,temp_df])
                     df=df[2:]
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -378,7 +378,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     candle=data['k']
                     candle_data=[candle['t'],candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
                     temp_df = pd.DataFrame([candle_data], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-                    temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in df['OpenTime']]
+                    temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
                     df=pd.concat([df,temp_df])
                     df=df[2:]
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
