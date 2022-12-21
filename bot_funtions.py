@@ -360,7 +360,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
     
     while(True):
         if restart==1:
-            notifier('USDT Restarted succesfully')
+            notifier('BUSD Restarted succesfully')
             restart=0
         try:
             ws = websocket.WebSocket()
@@ -381,6 +381,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
                     df=pd.concat([df,temp_df])
                     df=df[2:]
+                    print('here')
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
                     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
                     ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
