@@ -380,6 +380,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     temp_df = pd.DataFrame([candle_data], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
                     temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
                     df=pd.concat([df,temp_df])
+                    print(temp_df)
                     df=df[2:]
                     print(df)
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
