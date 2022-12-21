@@ -189,6 +189,7 @@ def notifier(message,tries=0):
         
 def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,client,coin,sleep_time,in_trade_usdt,in_trade_busd,lock):
     notifier(f'Starting USDT function,SARAVANA BHAVA')
+    restart=0
     while(True):
         if restart==1:
             notifier('USDT Restarted succesfully')
