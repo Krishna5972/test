@@ -4,7 +4,7 @@ import config
 
 client=Client(config.api_key,config.secret_key)
 
-account_info = client.futures_account_info()
+account_info = client.futures_account()
 
 for balance in account_info['balances']:
     if balance['asset'] == 'USDT':
