@@ -190,7 +190,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
     while(True):
         try:
             risk=0.02
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)                        
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)                        
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -293,6 +293,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 time.sleep(sleep_time*60)
             else:
                 print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
+                print(f'ma : {super_df.iloc[-1][ma_condition]},close :{super_df.iloc[-1]["close"]},ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}')
+
                 if in_trade_usdt.value==1 and weight_reduce>=15:
                     weight_reduce=0
                     open_orders=client.futures_get_open_orders(symbol=f'{coin}USDT')
@@ -324,7 +326,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     notifier(f'SARAVANA BHAVA ! Running... ,USDT POS:{in_trade_usdt.value} , BUSD POS: {in_trade_busd.value},Bal :{bal_pos},PNL:{profit_pos}')                    
                 weight_reduce+=1
                 indicator+=1
-                time.sleep(2)
+                time.sleep(3)
         except Exception as err:
             notifier(err)
             notifier(f'Restarting USDT function in 50 seconds')
@@ -338,7 +340,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
     while(True):
         try:
             risk=0.02
-            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=300)
+            bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
             super_df=supertrend(coin,df, period, atr1,pivot_period)
@@ -393,7 +395,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
 
             
 
-                notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos},close : {entry} , ma: {super_df.iloc[-1]["ma_condition"]}')
+                notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos},close : {entry} , ma: {super_df.iloc[-1][ma_condition]}')
                 
                 
                 if signal == 'Buy' and ma_pos == 1:
@@ -420,11 +422,13 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 
             else:       
                 print(f'Scanning BUSD {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
-                print(f'ma : {super_df.iloc[-1]["ma_condition"]},close :{super_df.iloc[-1]["close"]},ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}')
-                time.sleep(2)
+                print(f'ma : {super_df.iloc[-1][ma_condition]},close :{super_df.iloc[-1]["close"]},ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}')
+                time.sleep(3)
         except Exception as e:
             notifier(e)
             notifier(f'Restarting BUSD function in 50 seconds')
+            print(f'Restarting BUSD function in 50 seconds')
+            print(e)
             time.sleep(50)
 
 
