@@ -197,21 +197,21 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
         try:
             ws = websocket.WebSocket()
             ws.connect(f"wss://fstream.binance.com/ws/ethusdt@kline_{timeframe}")
-            risk=0.02
+            risk=0.007
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-            df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
+            df.drop(['OpenTime'],axis=1,inplace=True)
             while True:
                 result = ws.recv()
                 data = json.loads(result)
                 if data['k']['x']==True:
                     notifier(f'{timeframe} candle closed')
                     candle=data['k']
-                    candle_data=[candle['t'],candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
-                    temp_df = pd.DataFrame([candle_data], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-                    temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
-                    df=pd.concat([df,temp_df])
+                    candle_data=[candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
+                    temp_df = pd.DataFrame([candle_data], columns=['open', 'high', 'low', 'close', 'volume'])
+                    df=pd.concat([df,temp_df]).reset_index(drop=True)
                     df=df[2:]
+                    df = df.astype(float)
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
                     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
                     ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
@@ -365,24 +365,21 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
         try:
             ws = websocket.WebSocket()
             ws.connect(f"wss://fstream.binance.com/ws/ethusdt@kline_{timeframe}")
-            risk=0.02
+            risk=0.007
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-            df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')+ pd.DateOffset(hours=5, minutes=30)
-            
+            df.drop(['OpenTime'],axis=1,inplace=True)
             while True:
                 result = ws.recv()
                 data = json.loads(result)
                 if data['k']['x']==True:
                     notifier(f'{timeframe} candle closed')
                     candle=data['k']
-                    candle_data=[candle['t'],candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
-                    temp_df = pd.DataFrame([candle_data], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
-                    temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
-                    df=pd.concat([df,temp_df])
-                    df=df.reset_index(drop=True)
+                    candle_data=[candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
+                    temp_df = pd.DataFrame([candle_data], columns=['open', 'high', 'low', 'close', 'volume'])
+                    df=pd.concat([df,temp_df]).reset_index(drop=True)
                     df=df[2:]
-                    
+                    df = df.astype(float)
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
                     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
                     ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
