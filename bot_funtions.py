@@ -20,7 +20,7 @@ def supertrend(coin,df, period, atr_multiplier,pivot_period):
     trend_atr=atr_multiplier
     trend_period=period
         
-    df['OpenTime']=pd.to_datetime(df['OpenTime'])
+    # df['OpenTime']=pd.to_datetime(df['OpenTime'])
     
     
     df['ma_40']=talib.MA(df['close'], timeperiod=40)
@@ -380,17 +380,13 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     temp_df = pd.DataFrame([candle_data], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
                     temp_df['OpenTime']=[datetime.fromtimestamp(x/1000) for x in temp_df['OpenTime']]
                     df=pd.concat([df,temp_df])
-                    print(temp_df)
+                    df=df.reset_index(drop=True)
                     df=df[2:]
-                    print(df)
-                    super_df=supertrend(coin,df, period, atr1,pivot_period)
-                    print('here_1')
-                    super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
-                    print('here_2')
-                    ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
-                    print('here_3')
                     
-                    print(super_df)
+                    super_df=supertrend(coin,df, period, atr1,pivot_period)
+                    super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
+                    ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
+                    print('here')
                     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
                         lock.acquire()
                         
