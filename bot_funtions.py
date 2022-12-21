@@ -209,8 +209,9 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     candle=data['k']
                     candle_data=[candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
                     temp_df = pd.DataFrame([candle_data], columns=['open', 'high', 'low', 'close', 'volume'])
-                    df=pd.concat([df,temp_df]).reset_index(drop=True)
+                    df=pd.concat([df,temp_df])
                     df=df[2:]
+                    df=df.reset_index(drop=True)
                     df = df.astype(float)
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
                     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
@@ -377,8 +378,9 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     candle=data['k']
                     candle_data=[candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
                     temp_df = pd.DataFrame([candle_data], columns=['open', 'high', 'low', 'close', 'volume'])
-                    df=pd.concat([df,temp_df]).reset_index(drop=True)
+                    df=pd.concat([df,temp_df])
                     df=df[2:]
+                    df=df.reset_index(drop=True)
                     df = df.astype(float)
                     print(df.dtypes)
                     print(df['high'])
