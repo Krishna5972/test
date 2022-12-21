@@ -201,6 +201,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)
+            indicator=0
+            weight_reduce=0
             while True:
                 result = ws.recv()
                 data = json.loads(result)
@@ -382,12 +384,9 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                     df=df[2:]
                     df=df.reset_index(drop=True)
                     df = df.astype(float)
-                    print(df.dtypes)
-                    print(df['high'])
                     super_df=supertrend(coin,df, period, atr1,pivot_period)
                     super_df[f'{ma_condition}_pos']=super_df[[ma_condition,'close']].apply(ema_pos,col_name=ma_condition,axis=1)
                     ma_pos=super_df.iloc[-1][f'{ma_condition}_pos']
-                    print('here')
                     if super_df.iloc[-1]['in_uptrend'] != super_df.iloc[-2]['in_uptrend']:
                         lock.acquire()
                         
