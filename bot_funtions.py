@@ -207,7 +207,6 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                 result = ws.recv()
                 data = json.loads(result)
                 if data['k']['x']==True:
-                    notifier(f'{timeframe} candle closed')
                     candle=data['k']
                     candle_data=[candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
                     temp_df = pd.DataFrame([candle_data], columns=['open', 'high', 'low', 'close', 'volume'])
@@ -255,7 +254,6 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             sl=super_df.iloc[-1]['upper_band']
                             sl_perc=(sl-entry)/entry
                             
-                        notifier(f'Initial stake:{stake}')
                         stake=(stake*risk)/sl_perc
                         quantity=round(stake/entry,3)
 
@@ -263,11 +261,12 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                         
                         
                         rr=3
-                        notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                         
                         if signal == 'Buy' and ma_pos == 1:
                             #buy order
                             client.futures_create_order(symbol=f'{coin}USDT', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+                            notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
+
                             notifier(f'Bought @{entry}, Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                             take_profit=entry+((entry-sl)*rr)
                             client.futures_create_order(
@@ -291,6 +290,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                                 
                             #sell order
                             client.futures_create_order(symbol=f'{coin}USDT', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
+                            notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
+
                             notifier(f'Sold @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                             take_profit=entry-((sl-entry)*rr)
                             client.futures_create_order(
@@ -316,6 +317,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     else:
                         # print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
                         # print(f'ma : {super_df.iloc[-1][ma_condition]},close :{super_df.iloc[-1]["close"]},ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}')
+                        notifier(f'{timeframe} candle closed')
+
 
                         if in_trade_usdt.value==1 and weight_reduce>=1:
                             weight_reduce=0
@@ -323,11 +326,12 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             if len(open_orders)==0:
                                 lock.acquire()
                                 in_trade_usdt.value=0
+                                notifier('USDT Pos closed in profit')
                                 lock.release()
                         
                         
-                        if indicator>2:
-                            indicator=0   #notification every 30 minutes
+                        if indicator>1:
+                            indicator=0   #notification every 60 minutes
                             information=client.futures_account()
                             totalUnrealizedProfit=round(float(information['totalUnrealizedProfit']),2)
                             bal=round(float(information['totalWalletBalance']),2)
@@ -352,6 +356,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
         except Exception as err:
             notifier(err)
             notifier(f'Restarting USDT function')
+            print(err)
             restart=1
 
 
@@ -376,7 +381,6 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                 result = ws.recv()
                 data = json.loads(result)
                 if data['k']['x']==True:
-                    notifier(f'{timeframe} candle closed')
                     candle=data['k']
                     candle_data=[candle['o'],candle['h'],candle['l'],candle['c'],candle['v']]
                     temp_df = pd.DataFrame([candle_data], columns=['open', 'high', 'low', 'close', 'volume'])
@@ -425,18 +429,16 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                             sl=super_df.iloc[-1]['upper_band']
                             sl_perc=(sl-entry)/entry
                             
-                        print(f'initial stake:{stake}')
                         stake=(stake*risk)/sl_perc
                         quantity=round(stake/entry,3)
 
-                    
 
-                        notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos},close : {entry} , ma: {super_df.iloc[-1][ma_condition]}')
-                        
                         
                         if signal == 'Buy' and ma_pos == 1:
                             #buy order
                             client.futures_create_order(symbol=f'{coin}BUSD', side='BUY', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='LONG')
+                            notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos},close : {entry} , ma: {super_df.iloc[-1][ma_condition]}')
+
                             notifier(f'Bought BUSD @{entry} , Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                             in_trade_busd.value=1
                             notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
@@ -445,6 +447,8 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                                 
                             #sell order
                             client.futures_create_order(symbol=f'{coin}BUSD', side='SELL', type='MARKET', quantity=quantity,dualSidePosition=True,positionSide='SHORT')
+                            notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos},close : {entry} , ma: {super_df.iloc[-1][ma_condition]}')
+
                             notifier(f'Sold BUSD @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
                             in_trade_busd.value=1
                             notifier(f'Risk adjusted stake:{round(stake,3)},entry:{entry},sl_perc: {round(sl_perc,3)}')
@@ -452,6 +456,8 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                             notifier(f'Not taking the trade')
 
                         lock.release()
+                    else:
+                        notifier(f'{timeframe} candle closed')
         except Exception as e:
             notifier(e)
             notifier(f'Restarting BUSD function')
