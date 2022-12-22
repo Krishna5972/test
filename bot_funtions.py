@@ -197,7 +197,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
         try:
             ws = websocket.WebSocket()
             ws.connect(f"wss://fstream.binance.com/ws/ethusdt@kline_{timeframe}")
-            risk=0.007
+            risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)
@@ -368,7 +368,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
         try:
             ws = websocket.WebSocket()
             ws.connect(f"wss://fstream.binance.com/ws/ethusdt@kline_{timeframe}")
-            risk=0.007
+            risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)

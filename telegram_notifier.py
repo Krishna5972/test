@@ -38,7 +38,7 @@ timeframes_dict={
 
 
 coin='ETH'
-timeframe_usdt='3m' 
+timeframe_usdt='30m' 
 period_usdt=5
 atr1_usdt=1
 pivot_period_usdt=5
@@ -58,7 +58,7 @@ while(True):
         time.sleep(300)
 
 
-timeframe_busd='1m'  
+timeframe_busd='15m'  
 period_busd=28
 atr1_busd=1
 pivot_period_busd=5
