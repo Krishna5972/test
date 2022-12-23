@@ -196,7 +196,8 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             restart=0
         try:
             ws = websocket.WebSocket()
-            ws.connect(f"wss://fstream.binance.com/ws/ethusdt@kline_{timeframe}")
+            ws.connect(f"wss://fstream.binance.com/ws/{str.lower(coin)}usdt@kline_{timeframe}")
+            ws.settimeout(2)
             risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
@@ -285,7 +286,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
                             notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                             notifier(f'Bought @{entry}, Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
-
+                            notifier(f'TP : {take_profit}')
                         elif signal == 'Sell' and ma_pos == -1:
                                 
                             #sell order
@@ -310,7 +311,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             notifier(f'Risk adjusted stake:{round(stake,2)},entry:{entry},sl_perc: {round(sl_perc,3)}')
                             notifier(f'Trend Changed {signal} and ma condition {ma_condition} is {ma_pos}')
                             notifier(f'Sold @{entry},Timeframe : {timeframe} , pivot_period: {pivot_period},atr:{atr1},period : {period},ma :{ma_condition}')
-
+                            notifier(f'TP : {take_profit}')
                         else:
                             notifier(f'Not taking the trade')
                         lock.release()
@@ -373,7 +374,8 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             restart=0
         try:
             ws = websocket.WebSocket()
-            ws.connect(f"wss://fstream.binance.com/ws/ethusdt@kline_{timeframe}")
+            ws.connect(f"wss://fstream.binance.com/ws/{str.lower(coin)}usdt@kline_{timeframe}")
+            ws.settimeout(2)
             risk=0.02
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
@@ -397,25 +399,24 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                         
                         try:
                             close_position_busd(client,coin,'Sell') #close open position if any
-                            notifier('Position Closed')
-                            in_trade_busd.value=0
+                            notifier(f'Position Closed {timeframe}')
+                            in_trade_busd.value=0   
                         except Exception as err:
                             try:
                                 close_position_busd(client,coin,'Buy')
-                                notifier('Position Closed')
+                                notifier(f'Position Closed {timeframe}')
                                 in_trade_busd.value=0
                             except Exception as e: 
-                                notifier('No Position to close')
-                                print(err)
+                                notifier(f'No Position to close {timeframe}')
+                                
             
                         # print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value} , sleeping for {sleep_time*60} seconds')
                         acc_balance = round(float(client.futures_account()['availableBalance']),2)
                         
                         
-                        if in_trade_usdt.value==0:
-                            stake=(acc_balance*0.88)
-                        else:
-                            stake=acc_balance+(acc_balance*0.12)
+                        
+                        stake=(acc_balance*0.88)
+                       
 
                         
                         notifier(f'Allocated stake:{round(stake,2)}')
