@@ -41,7 +41,7 @@ coin='ETH'
 timeframe_usdt='30m' 
 period_usdt=5
 atr1_usdt=1
-pivot_period_usdt=5
+pivot_period_usdt=10
 ma_condition_usdt='ema_100'
 time_usdt=timeframes_dict[timeframe_usdt]
 
@@ -57,12 +57,12 @@ while(True):
         notifier(f'Met with exception {e}, sleeping for 5 minutes and trying again')
         time.sleep(300)
 
-
-timeframe_busd='15m'  
-period_busd=28
+coin_2='DOGE'
+timeframe_busd='30m'  
+period_busd=12
 atr1_busd=1
-pivot_period_busd=5
-ma_condition_busd='ema_200'
+pivot_period_busd=10
+ma_condition_busd='ma_40'
 time_busd=timeframes_dict[timeframe_busd]
 
 
@@ -74,7 +74,7 @@ pos=client.futures_position_information(symbol=f'{coin}USDT')
 if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[2]['positionAmt']) !=0:
     in_trade_usdt.value=1
 
-pos=client.futures_position_information(symbol=f'{coin}BUSD')
+pos=client.futures_position_information(symbol=f'{coin_2}BUSD')
 if float(pos[0]['positionAmt']) !=0 or float(pos[1]['positionAmt']) !=0 or float(pos[2]['positionAmt']) !=0:
     in_trade_busd.value=1
 
@@ -99,7 +99,7 @@ p2=multiprocessing.Process(target=condition_busdt,args=[timeframe_busd,
                                                         ma_condition_busd,
                                                         exchange,
                                                         client,
-                                                        coin,
+                                                        coin_2,
                                                         time_busd,
                                                         in_trade_usdt,
                                                         in_trade_busd,

@@ -198,7 +198,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             ws = websocket.WebSocket()
             ws.connect(f"wss://fstream.binance.com/ws/{str.lower(coin)}usdt@kline_{timeframe}")
             ws.settimeout(15)
-            risk=0.02
+            risk=0.03
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)
@@ -236,7 +236,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             print(err)
 
                         # print(f'scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]},bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value},sleeping for {sleep_time*60} seconds')
-                        acc_balance = round(float(client.futures_account()['availableBalance']),2)
+                        acc_balance = round(float(client.futures_account()['totalCrossWalletBalance']),2)
                         
                         stake=(acc_balance*0.88)
                         
@@ -261,7 +261,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     
                         
                         
-                        rr=3
+                        rr=10
                         
                         if signal == 'Buy' and ma_pos == 1:
                             #buy order
@@ -336,7 +336,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             indicator=0   #notification every 60 minutes
                             information=client.futures_account()
                             totalUnrealizedProfit=round(float(information['totalUnrealizedProfit']),2)
-                            bal=round(float(information['totalWalletBalance']),2)
+                            bal=round(float(information['totalCrossWalletBalance']),2)
                             if bal > 173: #Month initial
                                 bal_pos='Profit'
                             else:
@@ -376,7 +376,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             ws = websocket.WebSocket()
             ws.connect(f"wss://fstream.binance.com/ws/{str.lower(coin)}usdt@kline_{timeframe}")
             ws.settimeout(15)
-            risk=0.02
+            risk=0.03
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)
@@ -411,7 +411,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                                 
             
                         # print(f'scanning busd {super_df.iloc[-1][f"OpenTime"]} trade found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value} , sleeping for {sleep_time*60} seconds')
-                        acc_balance = round(float(client.futures_account()['availableBalance']),2)
+                        acc_balance = round(float(client.futures_account()['totalCrossWalletBalance']),2)
                         
                         
                         
