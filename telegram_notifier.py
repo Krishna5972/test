@@ -45,18 +45,6 @@ pivot_period_usdt=10
 ma_condition_usdt='ema_100'
 time_usdt=timeframes_dict[timeframe_usdt]
 
-while(True):
-    try:
-        client=Client(config.api_key,config.secret_key)
-
-        client.futures_change_leverage(symbol=f'{coin}USDT', leverage=18)
-        client.futures_change_leverage(symbol=f'{coin}BUSD', leverage=18)
-        notifier(f'SARAVANA BHAVA')
-        break
-    except Exception as e:
-        notifier(f'Met with exception {e}, sleeping for 5 minutes and trying again')
-        time.sleep(300)
-
 coin_2='DOGE'
 timeframe_busd='30m'  
 period_busd=12
@@ -64,6 +52,18 @@ atr1_busd=1
 pivot_period_busd=10
 ma_condition_busd='ma_40'
 time_busd=timeframes_dict[timeframe_busd]
+
+while(True):
+    try:
+        client=Client(config.api_key,config.secret_key)
+
+        client.futures_change_leverage(symbol=f'{coin}USDT', leverage=18)
+        client.futures_change_leverage(symbol=f'{coin_2}BUSD', leverage=18)
+        notifier(f'SARAVANA BHAVA')
+        break
+    except Exception as e:
+        notifier(f'Met with exception {e}, sleeping for 5 minutes and trying again')
+        time.sleep(300)
 
 
 in_trade_usdt=multiprocessing.Value('i',0)
