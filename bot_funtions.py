@@ -202,6 +202,14 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)
+            x_str = str(df['close'].iloc[-1])
+            decimal_index = x_str.find('.')
+            round_price = len(x_str) - decimal_index - 1
+            exchange_info = client.futures_exchange_info()
+            for symbol in exchange_info['symbols']:
+                if symbol['symbol'] == coin:
+                    round_quantity=symbol['quantityPrecision']
+                    break
             indicator=0
             weight_reduce=0
             while True:
@@ -256,7 +264,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             sl_perc=(sl-entry)/entry
                             
                         stake=(stake*risk)/sl_perc
-                        quantity=round(stake/entry,3)
+                        quantity=round(stake/entry,round_quantity)
 
                     
                         
@@ -270,7 +278,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             take_profit=entry+((entry-sl)*rr)
                             client.futures_create_order(
                                     symbol=f'{coin}USDT',
-                                    price=round(take_profit,2),
+                                    price=round(take_profit,round_price),
                                     side='SELL',
                                     positionSide='LONG',
                                     quantity=quantity,
@@ -295,7 +303,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                             take_profit=entry-((sl-entry)*rr)
                             client.futures_create_order(
                                                     symbol=f'{coin}USDT',
-                                                    price=round(take_profit,2),
+                                                    price=round(take_profit,round_price),
                                                     side='BUY',
                                                     positionSide='SHORT',
                                                     quantity=quantity,
@@ -319,7 +327,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     else:
                         # print(f'Scanning USDT {super_df.iloc[-1][f"OpenTime"]} trade not found, ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]} and uptrend :{super_df.iloc[-1]["in_uptrend"]}, bsud_poisiton :{in_trade_busd.value},usdt_position :{in_trade_usdt.value}')
                         # print(f'ma : {super_df.iloc[-1][ma_condition]},close :{super_df.iloc[-1]["close"]},ma_pos :{super_df.iloc[-1][f"{ma_condition}_pos"]}')
-                        notifier(f'{timeframe} candle closed')
+                        notifier(f'{timeframe} candle closed : {coin}')
 
 
                         if in_trade_usdt.value==1 and weight_reduce>=1:
@@ -357,7 +365,7 @@ def condition_usdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,clie
                     
         except Exception as err:
             notifier(err)
-            notifier(f'Restarting USDT function')
+            notifier(f'Restarting USDT function : {coin}')
             print(err)
             restart=1
 
@@ -380,6 +388,15 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
             bars = exchange.fetch_ohlcv(f'{coin}/USDT', timeframe=timeframe, limit=998)
             df = pd.DataFrame(bars[:-1], columns=['OpenTime', 'open', 'high', 'low', 'close', 'volume'])
             df.drop(['OpenTime'],axis=1,inplace=True)
+            x_str = str(df['close'].iloc[-1])
+            decimal_index = x_str.find('.')
+            round_price = len(x_str) - decimal_index - 1
+            exchange_info = client.futures_exchange_info()
+            for symbol in exchange_info['symbols']:
+                if symbol['symbol'] == coin:
+                    round_quantity=symbol['quantityPrecision']
+                    break
+
             while True:
                 result = ws.recv()
                 data = json.loads(result)
@@ -432,7 +449,7 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
                             sl_perc=(sl-entry)/entry
                             
                         stake=(stake*risk)/sl_perc
-                        quantity=round(stake/entry,3)
+                        quantity=round(stake/entry,round_quantity)
 
 
                         
@@ -459,10 +476,10 @@ def condition_busdt(timeframe,pivot_period,atr1,period,ma_condition,exchange,cli
 
                         lock.release()
                     else:
-                        notifier(f'{timeframe} candle closed')
+                        notifier(f'{timeframe} candle closed : {coin}')
         except Exception as e:
             notifier(e)
-            notifier(f'Restarting BUSD function')
+            notifier(f'Restarting BUSD function : {coin}')
             print(e)
             restart=1
 
